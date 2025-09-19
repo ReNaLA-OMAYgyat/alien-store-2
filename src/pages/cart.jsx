@@ -1,11 +1,11 @@
 // src/CartPage.jsx
 import React, { useEffect, useState } from "react";
 import axios from "axios";
+import { useNavigate } from "react-router-dom";
 
 export default function CartPage() {
+  const navigate = useNavigate();
   const [cartItems, setCartItems] = useState([]); // flattened cart items
-  const [categories, setCategories] = useState([]);
-  const [subcategories, setSubcategories] = useState([]);
   const [loading, setLoading] = useState(true);
 
   // Helper: merge duplicate products across carts
@@ -23,21 +23,32 @@ export default function CartPage() {
     return Object.values(merged);
   };
 
+  // Fetch cart data
   const refreshCarts = async () => {
+    const token = localStorage.getItem("token");
+
+    // If no token, redirect to login
+    if (!token) {
+      navigate("/login");
+      return;
+    }
+
     try {
-      const token = localStorage.getItem("token");
+      const res = await axios.get("http://localhost:8000/api/carts", {
+        headers: { Authorization: "Bearer " + token },
+      });
 
-      const [cartsRes] = await Promise.all([
-        axios.get("http://localhost:8000/api/carts", {
-          headers: { Authorization: "Bearer " + token },
-        }),
-      ]);
-
-      const mergedItems = mergeCartItems(cartsRes.data || []);
+      const mergedItems = mergeCartItems(res.data || []);
       setCartItems(mergedItems);
     } catch (err) {
       console.error("API error:", err.response?.data || err);
-      setCartItems([]);
+
+      // If unauthorized, redirect to login
+      if (err.response?.status === 401) {
+        navigate("/login");
+      } else {
+        setCartItems([]);
+      }
     } finally {
       setLoading(false);
     }
@@ -48,13 +59,17 @@ export default function CartPage() {
   }, []);
 
   const removeProduct = async (cartId, productId) => {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      navigate("/login");
+      return;
+    }
+
     try {
       await axios.put(
         `http://localhost:8000/api/carts/${cartId}`,
         { product_id: productId, qty: 0 },
-        {
-          headers: { Authorization: "Bearer " + localStorage.getItem("token") },
-        }
+        { headers: { Authorization: "Bearer " + token } }
       );
       await refreshCarts();
     } catch (err) {
@@ -63,6 +78,12 @@ export default function CartPage() {
   };
 
   const updateQuantity = async (cartId, productId, newQty) => {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      navigate("/login");
+      return;
+    }
+
     try {
       if (newQty < 1) {
         await removeProduct(cartId, productId);
@@ -72,9 +93,7 @@ export default function CartPage() {
       await axios.put(
         `http://localhost:8000/api/carts/${cartId}`,
         { product_id: productId, qty: newQty },
-        {
-          headers: { Authorization: "Bearer " + localStorage.getItem("token") },
-        }
+        { headers: { Authorization: "Bearer " + token } }
       );
 
       await refreshCarts();
