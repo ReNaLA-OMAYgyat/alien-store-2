@@ -12,8 +12,8 @@ export default function Navbar() {
   const [categories, setCategories] = useState([]);
   const [subcategories, setSubcategories] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState(null);
+  const [selectedSubcategory, setSelectedSubcategory] = useState(null);
 
-  // Fetch cart count
   const getCartItemCount = (carts) => {
     let merged = {};
     carts.forEach(cart =>
@@ -35,13 +35,11 @@ export default function Navbar() {
     }
   };
 
-  // Fetch categories and subcategories
   const fetchCategories = async () => {
     try {
       const catRes = await api.get("/user-login-categories");
       const subRes = await api.get("/user-login-subcategories");
 
-      // Deduplicate categories by ID to avoid F&B duplication
       const uniqueCategories = Array.from(
         new Map(catRes.data.map(cat => [cat.id, cat])).values()
       );
@@ -95,89 +93,151 @@ export default function Navbar() {
     else navigate("/cart");
   };
 
-  // Event dispatch for category/subcategory filter
   const selectCategory = (cat) => {
     setSelectedCategory(cat.id);
-    window.dispatchEvent(new CustomEvent("categorySelected", { detail: { categoryId: cat.id } }));
+    setSelectedSubcategory(null);
+    window.dispatchEvent(
+      new CustomEvent("categorySelected", { detail: { categoryId: cat.id } })
+    );
   };
 
   const selectSubcategory = (sub) => {
-    window.dispatchEvent(new CustomEvent("subcategorySelected", { detail: { subcategoryId: sub.id } }));
+    setSelectedSubcategory(sub.id);
+    setSelectedCategory(sub.category_id);
+    window.dispatchEvent(
+      new CustomEvent("subcategorySelected", { detail: { subcategoryId: sub.id } })
+    );
   };
 
   const displayCartCount = cartCount > 99 ? "99+" : cartCount;
 
   return (
-    <div className="w-100 bg-primary text-white">
-      <div className="container-fluid py-3 d-flex align-items-center">
-        <div className="me-3 d-flex align-items-center"><AiOutlineMenu size={24} /></div>
-
-        <div className="d-flex align-items-center me-4">
-          <div className="bg-gradient rounded-circle d-flex align-items-center justify-content-center p-2 me-2"
-               style={{ background: "linear-gradient(to right, #a78bfa, #f9a8d4)" }}>
-            <BsLightning className="text-white" />
+    <div className="w-100 sticky-top" style={{ zIndex: 1030 }}>
+      {/* Top Navbar */}
+      <div className="bg-primary text-white">
+        <div className="container-fluid py-3 d-flex align-items-center">
+          {/* Left menu */}
+          <div className="me-3 d-flex align-items-center">
+            <AiOutlineMenu size={24} />
           </div>
-          <span className="fw-bold fs-4">Yofte.</span>
-        </div>
 
-        {/* Categories */}
-        <div className="d-flex flex-grow-1 justify-content-center gap-2">
-          {categories.map(cat => (
-            <div key={cat.id} className="position-relative">
-              <button
-                className={`btn btn-sm ${selectedCategory === cat.id ? "btn-primary" : "btn-outline-light"}`}
+          {/* Branding */}
+          <div className="d-flex align-items-center me-4">
+            <div
+              className="bg-gradient rounded-circle d-flex align-items-center justify-content-center p-2 me-2"
+              style={{ background: "linear-gradient(to right, #a78bfa, #f9a8d4)" }}
+            >
+              <BsLightning className="text-white" />
+            </div>
+            <span className="fw-bold fs-4">Yofte.</span>
+          </div>
+
+          {/* Categories */}
+          <div className="d-flex flex-grow-1 justify-content-center gap-3">
+            {categories.map(cat => (
+              <span
+                key={cat.id}
                 onClick={() => selectCategory(cat)}
+                className={`nav-link px-2 py-1`}
+                style={{
+                  cursor: "pointer",
+                  color:
+                    selectedCategory === cat.id ? "#fff" : "rgba(255,255,255,0.6)",
+                  borderBottom:
+                    selectedCategory === cat.id
+                      ? "2px solid #fff"
+                      : "2px solid transparent",
+                  fontWeight: selectedCategory === cat.id ? "600" : "400",
+                  transition: "all 0.2s",
+                }}
               >
                 {cat.name}
-              </button>
-
-              {/* Subcategories */}
-              {selectedCategory === cat.id && subcategories.filter(s => s.category_id === cat.id).length > 0 && (
-                <div className="position-absolute bg-white p-2 mt-1 rounded shadow" style={{ zIndex: 10 }}>
-                  {subcategories.filter(s => s.category_id === cat.id).map(sub => (
-                    <button
-                      key={sub.id}
-                      className="btn btn-sm btn-outline-secondary m-1"
-                      onClick={() => selectSubcategory(sub)}
-                    >
-                      {sub.name}
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
-          ))}
-        </div>
-
-        {/* Cart & User */}
-        <div className="d-flex align-items-center ms-auto gap-3">
-          <div className="position-relative" style={{ cursor: "pointer" }} onClick={handleCartClick}>
-            <BsBag size={24} />
-            {cartCount > 0 && (
-              <span className="position-absolute top-0 start-100 translate-middle badge rounded-circle bg-light text-primary p-1"
-                    style={{ fontSize: "0.6rem" }}>{displayCartCount}</span>
-            )}
+              </span>
+            ))}
           </div>
 
-          {userRole ? (
-            <div className="d-flex align-items-center gap-2">
-              <BsPerson />
-              <span className="fw-semibold">{userRole}</span>
-              {userRole === "Admin" && (
-                <button className="btn btn-sm btn-warning ms-2" onClick={() => navigate("/dashboard")}>
-                  Dashboard
-                </button>
+          {/* Cart & User */}
+          <div className="d-flex align-items-center ms-auto gap-3">
+            {/* Cart */}
+            <div
+              className="position-relative"
+              style={{ cursor: "pointer" }}
+              onClick={handleCartClick}
+            >
+              <BsBag size={24} />
+              {cartCount > 0 && (
+                <span
+                  className="position-absolute top-0 start-100 translate-middle badge rounded-circle bg-light text-primary p-1"
+                  style={{ fontSize: "0.6rem" }}
+                >
+                  {displayCartCount}
+                </span>
               )}
-              <button className="btn btn-sm btn-light ms-2" onClick={handleLogoutClick}>Logout</button>
             </div>
-          ) : (
-            <div className="d-flex align-items-center gap-1">
-              <BsPerson />
-              <Link to="/login" className="text-white text-decoration-none">Sign In</Link>
-            </div>
-          )}
+
+            {/* User */}
+            {userRole ? (
+              <div className="d-flex align-items-center gap-2">
+                <BsPerson />
+                <span className="fw-semibold">{userRole}</span>
+                {userRole === "Admin" && (
+                  <button
+                    className="btn btn-sm btn-warning ms-2"
+                    onClick={() => navigate("/dashboard")}
+                  >
+                    Dashboard
+                  </button>
+                )}
+                <button
+                  className="btn btn-sm btn-light ms-2"
+                  onClick={handleLogoutClick}
+                >
+                  Logout
+                </button>
+              </div>
+            ) : (
+              <div className="d-flex align-items-center gap-1">
+                <BsPerson />
+                <Link to="/login" className="text-white text-decoration-none">
+                  Sign In
+                </Link>
+              </div>
+            )}
+          </div>
         </div>
       </div>
+
+      {/* Subcategories Row */}
+      {selectedCategory && (
+        <div className="bg-light py-2 border-bottom">
+          <div className="container-fluid d-flex justify-content-center flex-wrap gap-3">
+            {subcategories
+              .filter(s => s.category_id === selectedCategory)
+              .map(sub => (
+                <span
+                  key={sub.id}
+                  onClick={() => selectSubcategory(sub)}
+                  style={{
+                    cursor: "pointer",
+                    color:
+                      selectedSubcategory === sub.id
+                        ? "#0d6efd"
+                        : "rgba(0,0,0,0.6)",
+                    borderBottom:
+                      selectedSubcategory === sub.id
+                        ? "2px solid #0d6efd"
+                        : "2px solid transparent",
+                    fontWeight: selectedSubcategory === sub.id ? "600" : "400",
+                    padding: "2px 4px",
+                    transition: "all 0.2s",
+                  }}
+                >
+                  {sub.name}
+                </span>
+              ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

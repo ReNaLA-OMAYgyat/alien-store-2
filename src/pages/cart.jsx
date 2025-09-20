@@ -5,10 +5,10 @@ import { useNavigate } from "react-router-dom";
 
 export default function CartPage() {
   const navigate = useNavigate();
-  const [cartItems, setCartItems] = useState([]); // flattened cart items
+  const [cartItems, setCartItems] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // Helper: merge duplicate products across carts
+  // Merge duplicate products across carts
   const mergeCartItems = (carts) => {
     const merged = {};
     carts.forEach((cart) => {
@@ -23,11 +23,8 @@ export default function CartPage() {
     return Object.values(merged);
   };
 
-  // Fetch cart data
   const refreshCarts = async () => {
     const token = localStorage.getItem("token");
-
-    // If no token, redirect to login
     if (!token) {
       navigate("/login");
       return;
@@ -42,8 +39,6 @@ export default function CartPage() {
       setCartItems(mergedItems);
     } catch (err) {
       console.error("API error:", err.response?.data || err);
-
-      // If unauthorized, redirect to login
       if (err.response?.status === 401) {
         navigate("/login");
       } else {
@@ -58,6 +53,7 @@ export default function CartPage() {
     refreshCarts();
   }, []);
 
+  // ✅ Use DELETE instead of PUT for removing products
   const removeProduct = async (cartId, productId) => {
     const token = localStorage.getItem("token");
     if (!token) {
@@ -66,11 +62,10 @@ export default function CartPage() {
     }
 
     try {
-      await axios.put(
-        `http://localhost:8000/api/carts/${cartId}`,
-        { product_id: productId, qty: 0 },
-        { headers: { Authorization: "Bearer " + token } }
-      );
+      await axios.delete(`http://localhost:8000/api/carts/${cartId}`, {
+        headers: { Authorization: "Bearer " + token },
+        data: { product_id: productId }, // Laravel needs body with DELETE
+      });
       await refreshCarts();
     } catch (err) {
       console.error("Error removing product:", err.response?.data || err);
@@ -103,7 +98,7 @@ export default function CartPage() {
   };
 
   const totalPrice = cartItems.reduce(
-    (sum, item) => sum + item.price * item.qty,
+    (sum, item) => sum + (item.product?.harga || 0) * item.qty,
     0
   );
 
@@ -131,7 +126,7 @@ export default function CartPage() {
                   />
                   <div>
                     <h5 className="mb-1">{item.product.nama}</h5>
-                    <p className="text-muted mb-0">Rp {item.price}</p>
+                    <p className="text-muted mb-0">Rp {item.product.harga}</p>
                   </div>
                 </div>
 
@@ -162,7 +157,9 @@ export default function CartPage() {
                   </button>
                 </div>
 
-                <p className="fw-bold mb-0">Rp {item.price * item.qty}</p>
+                <p className="fw-bold mb-0">
+                  Rp {item.product.harga * item.qty}
+                </p>
               </div>
             ))
           ) : (
