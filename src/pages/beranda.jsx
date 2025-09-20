@@ -1,4 +1,4 @@
-// Home.jsx
+// src/pages/Home.jsx
 import React, { useEffect, useState } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap/dist/js/bootstrap.bundle.min.js";
@@ -16,27 +16,26 @@ export default function Home() {
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [selectedSubcategory, setSelectedSubcategory] = useState(null);
 
-  useEffect(() => {
-    fetchData();
-  }, []);
-
+  // Fetch main data (categories + initial products)
   const fetchData = async () => {
     try {
       setLoading(true);
       setError(null);
 
-      const [catRes, prodRes] = await Promise.all([
-        api.get("/user-categories"),
+      const [catRes, prodRes, subRes] = await Promise.all([
+        api.get("/user-login-categories"),
         api.get("/user-products").catch(() => ({ data: [] })),
+        api.get("/user-login-subcategories"),
       ]);
 
-      setCategories(catRes.data);
+      setCategories(catRes.data || []);
+      setSubcategories(subRes.data || []);
 
       const productsData = Array.isArray(prodRes.data)
         ? prodRes.data
         : prodRes.data.data || [];
 
-      setProducts(productsData.slice(0, 4));
+      setProducts(productsData.slice(0, 4)); // initial display
     } catch (err) {
       console.error("Error fetching data:", err);
       setError("Gagal memuat data");
@@ -47,13 +46,12 @@ export default function Home() {
 
   const fetchSubcategories = async (categoryId) => {
     try {
-      const res = await api.get("/user-subcategories");
-      const filtered = res.data.filter((sub) => sub.category_id === categoryId);
-      setSubcategories(filtered);
+      const filtered = subcategories.filter((sub) => sub.category_id === categoryId);
       setSelectedCategory(categoryId);
       setSelectedSubcategory(null); // reset subcategory saat ganti kategori
+      setSubcategories(filtered);
     } catch (err) {
-      console.error("Error fetching subcategories:", err);
+      console.error("Error filtering subcategories:", err);
     }
   };
 
@@ -71,17 +69,34 @@ export default function Home() {
       setProducts(filtered);
       setSelectedSubcategory(subcategoryId);
     } catch (err) {
-      console.error("Error fetching products:", err);
+      console.error("Error filtering products:", err);
     }
   };
 
   const handleAddToCart = (product) => {
+    // Dispatch event to Navbar to update cart count instantly
+    window.dispatchEvent(new CustomEvent("cartUpdated", { detail: { increment: 1 } }));
     console.log("Tambah ke keranjang:", product);
   };
 
   const handleCheckout = (product) => {
     console.log("Checkout produk:", product);
   };
+
+  useEffect(() => {
+    fetchData();
+
+    const handleCategory = (e) => fetchSubcategories(e.detail.categoryId);
+    const handleSubcategory = (e) => fetchProductsBySubcategory(e.detail.subcategoryId);
+
+    window.addEventListener("categorySelected", handleCategory);
+    window.addEventListener("subcategorySelected", handleSubcategory);
+
+    return () => {
+      window.removeEventListener("categorySelected", handleCategory);
+      window.removeEventListener("subcategorySelected", handleSubcategory);
+    };
+  }, []);
 
   return (
     <>
@@ -91,44 +106,6 @@ export default function Home() {
       {/* Kategori & Subkategori */}
       <div className="container py-4">
         <h3 className="fw-bold mb-4 text-center">Belanja Sekarang</h3>
-
-        {/* Categories */}
-        <div className="row g-4 mb-4">
-          {categories.map((cat) => (
-            <div className="col-4" key={cat.id}>
-              <button
-                className={`btn w-100 ${
-                  selectedCategory === cat.id
-                    ? "btn-primary"
-                    : "btn-outline-primary"
-                }`}
-                onClick={() => fetchSubcategories(cat.id)}
-              >
-                {cat.name}
-              </button>
-            </div>
-          ))}
-        </div>
-
-        {/* Subcategories */}
-        {selectedCategory && (
-          <div className="row g-3 mb-4">
-            {subcategories.map((sub) => (
-              <div className="col-6 col-md-3" key={sub.id}>
-                <button
-                  className={`btn w-100 ${
-                    selectedSubcategory === sub.id
-                      ? "btn-success"
-                      : "btn-outline-success"
-                  }`}
-                  onClick={() => fetchProductsBySubcategory(sub.id)}
-                >
-                  {sub.name}
-                </button>
-              </div>
-            ))}
-          </div>
-        )}
 
         {/* Products */}
         <div className="row g-4">
