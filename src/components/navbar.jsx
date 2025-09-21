@@ -16,7 +16,7 @@ export default function Navbar() {
   const navigate = useNavigate();
   const [userRole, setUserRole] = useState(localStorage.getItem("role") || null);
   const [cartCount, setCartCount] = useState(0);
-  const [categories, setCategories] = useState(defaultCategories); // start with default
+  const [categories] = useState(defaultCategories); // ❗ always static
   const [subcategories, setSubcategories] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [selectedSubcategory, setSelectedSubcategory] = useState(null);
@@ -46,19 +46,11 @@ export default function Navbar() {
   const fetchCategories = async () => {
     try {
       setSubLoading(true);
-      const catRes = await api.get("/user-login-categories");
+      // ✅ only fetch subcategories
       const subRes = await api.get("/user-login-subcategories");
-
-      if (catRes.data?.length > 0) {
-        const uniqueCategories = Array.from(
-          new Map(catRes.data.map((cat) => [cat.id, cat])).values()
-        );
-        setCategories(uniqueCategories);
-      }
-
       setSubcategories(subRes.data || []);
     } catch (err) {
-      console.error("Error fetching categories:", err);
+      console.error("Error fetching subcategories:", err);
     } finally {
       setSubLoading(false);
     }
