@@ -195,11 +195,12 @@ export default function Dashboard() {
   };
 
   return (
-    <div className="d-flex vh-100">
+    <div className="d-flex">
       {/* Sidebar */}
       <Sidebar />
       {/* Main Content */}
-      <div className="flex-grow-1 bg-light p-4">
+      <div className="flex-grow-1 bg-light p-4"
+        style={{ marginLeft: 250, minHeight: "100vh" }}>
         <h2 className="fw-bold mb-4">Dashboard Subcategories</h2>
 
         <button

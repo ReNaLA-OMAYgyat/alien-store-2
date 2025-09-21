@@ -34,25 +34,26 @@ export default function DetailProductModal({ show, onClose, onSaved, productDeta
     setForm((prev) => ({ ...prev, [name]: value }));
   };
 
-  // Submit form
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-   try {
-  if (productDetail) {
-    await api.put(`/products-detail/${productDetail.id}`, form);
-  } else {
-    await api.post("/products-detail", form);
+ const handleSubmit = async (e) => {
+  e.preventDefault();
+  try {
+    const payload = [from];
+    console.log("Payload dikirim:", payload);
+
+    if (productDetail) {
+      await api.put(`/products-detail/${productDetail.id}`, payload);
+    } else {
+      await api.post("/products-detail", payload);
+    }
+
+    alert("Data detail produk berhasil disimpan ✅");
+    onSaved();   // refresh data list
+    onClose();   // tutup modal
+  } catch (err) {
+    console.error("Error saving detail product:", err.response?.data || err);
+    alert("Gagal menyimpan detail produk ❌");
   }
-
-  alert("Data detail produk berhasil disimpan ✅");
-
-  onSaved();
-  onClose();
-} catch (err) {
-  console.error("Error saving detail product:", err.response?.data || err);
-  alert("Gagal menyimpan detail produk ❌");
-}
-  };
+};
 
   if (!show) return null;
 
