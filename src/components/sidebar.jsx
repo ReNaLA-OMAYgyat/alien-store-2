@@ -18,19 +18,19 @@ export default function Sidebar() {
     { name: "Orders", path: "/orders", icon: "bi-bag-check" },
     { name: "Customers", path: "/customer", icon: "bi-people" },
     { name: "Reports", path: "/reports", icon: "bi-graph-up" },
+    { name: "Settings", path: "/setting", icon: "bi-gear" }, // ✅ baru
   ];
 
   return (
     <div
-        className="d-flex flex-column p-3 text-white shadow position-fixed top-0 start-0"
-  style={{
-    width: "250px",
-    background: "linear-gradient(180deg, #0f0f0f 0%, #1c1c1c 100%)",
-    borderRight: "1px solid rgba(255,255,255,0.08)",
-    height: "100vh",
-    zIndex: 1000,
-  }}
-
+      className="d-flex flex-column p-3 text-white shadow position-fixed top-0 start-0"
+      style={{
+        width: "250px",
+        background: "linear-gradient(180deg, #0f0f0f 0%, #1c1c1c 100%)",
+        borderRight: "1px solid rgba(255,255,255,0.08)",
+        height: "100vh",
+        zIndex: 1000,
+      }}
     >
       {/* Logo / Brand */}
       <div className="d-flex align-items-center justify-content-center mb-4">

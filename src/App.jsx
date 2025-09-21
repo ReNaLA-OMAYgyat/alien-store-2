@@ -12,6 +12,7 @@ import Admin from "./pages/admin";
 import Reports from "./pages/reports";
 import Orders from "./pages/orders";
 import Customers from "./pages/customer";
+import Settings from "./pages/setting";
 export default function App() {
   const location = useLocation();
 
@@ -25,6 +26,7 @@ export default function App() {
         location.pathname !== "/reports" && 
         location.pathname !== "/orders" && 
         location.pathname !== "/customer" && 
+        location.pathname !== "/setting" && 
         <Navbar />}
       <Routes>
         <Route path="/" element={<Navigate to="/beranda" replace />} />
@@ -44,6 +46,14 @@ export default function App() {
           element={
             <PrivateRouteAdmin>
               <Product />
+            </PrivateRouteAdmin>
+          }
+        />
+        <Route
+          path="/setting"
+          element={
+            <PrivateRouteAdmin>
+              <Settings />
             </PrivateRouteAdmin>
           }
         />
