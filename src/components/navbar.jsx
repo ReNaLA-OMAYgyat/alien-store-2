@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from "react";
 import { BsLightning, BsPerson, BsBag } from "react-icons/bs";
 import { AiOutlineMenu } from "react-icons/ai";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate, useLocation, Link } from "react-router-dom";
 import api from "../api";
 
 // ✅ Pre-placed categories (instant render)
@@ -14,9 +14,11 @@ const defaultCategories = [
 
 export default function Navbar() {
   const navigate = useNavigate();
+  const location = useLocation(); // 👈 detect current page
+
   const [userRole, setUserRole] = useState(localStorage.getItem("role") || null);
   const [cartCount, setCartCount] = useState(0);
-  const [categories] = useState(defaultCategories); // ❗ always static
+  const [categories] = useState(defaultCategories);
   const [subcategories, setSubcategories] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [selectedSubcategory, setSelectedSubcategory] = useState(null);
@@ -46,7 +48,6 @@ export default function Navbar() {
   const fetchCategories = async () => {
     try {
       setSubLoading(true);
-      // ✅ only fetch subcategories
       const subRes = await api.get("/user-login-subcategories");
       setSubcategories(subRes.data || []);
     } catch (err) {
@@ -116,6 +117,13 @@ export default function Navbar() {
 
   const displayCartCount = cartCount > 99 ? "99+" : cartCount;
 
+  const onHomeClick = () => {
+    navigate("/beranda");
+  };
+
+  // 👇 only show categories/subcategories if on Home page (/ or /beranda)
+  const isHomePage = ["/", "/beranda"].includes(location.pathname);
+
   return (
     <div className="w-100 sticky-top" style={{ zIndex: 1030 }}>
       {/* Top Navbar */}
@@ -127,7 +135,11 @@ export default function Navbar() {
           </div>
 
           {/* Branding */}
-          <div className="d-flex align-items-center me-4">
+          <div
+            className="d-flex align-items-center me-4"
+            style={{ cursor: "pointer" }}
+            onClick={onHomeClick}
+          >
             <div
               className="bg-gradient rounded-circle d-flex align-items-center justify-content-center p-2 me-2"
               style={{ background: "linear-gradient(to right, #a78bfa, #f9a8d4)" }}
@@ -137,31 +149,47 @@ export default function Navbar() {
             <span className="fw-bold fs-4">Yofte.</span>
           </div>
 
-          {/* Categories */}
-          <div className="d-flex flex-grow-1 justify-content-center gap-3">
-            {categories.map((cat) => (
-              <span
-                key={cat.id}
-                onClick={() => selectCategory(cat)}
-                className={`nav-link px-2 py-1`}
-                style={{
-                  cursor: "pointer",
-                  color:
-                    selectedCategory === cat.id
-                      ? "#fff"
-                      : "rgba(255,255,255,0.6)",
-                  borderBottom:
-                    selectedCategory === cat.id
-                      ? "2px solid #fff"
-                      : "2px solid transparent",
-                  fontWeight: selectedCategory === cat.id ? "600" : "400",
-                  transition: "all 0.2s",
-                }}
-              >
-                {cat.name}
-              </span>
-            ))}
-          </div>
+          {/* ✅ Home button always visible with logo */}
+          <span
+            onClick={onHomeClick}
+            className="nav-link px-2 py-1 d-flex align-items-center gap-1"
+            style={{
+              cursor: "pointer",
+              color: isHomePage ? "#fff" : "rgba(255,255,255,0.8)",
+              fontWeight: "600",
+            }}
+          >
+            <BsLightning size={16} className="me-1" />
+            Home
+          </span>
+
+          {/* ✅ Categories only on Home page */}
+          {isHomePage && (
+            <div className="d-flex flex-grow-1 justify-content-center gap-3">
+              {categories.map((cat) => (
+                <span
+                  key={cat.id}
+                  onClick={() => selectCategory(cat)}
+                  className="nav-link px-2 py-1"
+                  style={{
+                    cursor: "pointer",
+                    color:
+                      selectedCategory === cat.id
+                        ? "#fff"
+                        : "rgba(255,255,255,0.6)",
+                    borderBottom:
+                      selectedCategory === cat.id
+                        ? "2px solid #fff"
+                        : "2px solid transparent",
+                    fontWeight: selectedCategory === cat.id ? "600" : "400",
+                    transition: "all 0.2s",
+                  }}
+                >
+                  {cat.name}
+                </span>
+              ))}
+            </div>
+          )}
 
           {/* Cart & User */}
           <div className="d-flex align-items-center ms-auto gap-3">
@@ -214,12 +242,11 @@ export default function Navbar() {
         </div>
       </div>
 
-      {/* Subcategories Row */}
-      {selectedCategory && (
+      {/* ✅ Subcategories only on Home page */}
+      {isHomePage && selectedCategory && (
         <div className="bg-light py-2 border-bottom">
           <div className="container-fluid d-flex justify-content-center flex-wrap gap-3">
             {subLoading ? (
-              // 🚀 shimmer placeholders
               Array.from({ length: 4 }).map((_, i) => (
                 <span
                   key={i}
