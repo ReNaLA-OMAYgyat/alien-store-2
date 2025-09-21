@@ -26,6 +26,7 @@ export default function Navbar() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [showMobileCategoryMenu, setShowMobileCategoryMenu] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [showMobileSearch, setShowMobileSearch] = useState(false);
 
   const getCartItemCount = (carts) => {
     let merged = {};
@@ -263,11 +264,11 @@ useEffect(() => {
                         cursor: "pointer",
                         color:
                           selectedCategory === cat.id
-                            ? "#0d6efd"
+                            ? "#ffffff"
                             : "rgba(255,255,255,0.9)",
                         borderBottom:
                           selectedCategory === cat.id
-                            ? "2px solid #0d6efd"
+                            ? "2px solid #ffffff"
                             : "2px solid transparent",
                         fontWeight:
                           selectedCategory === cat.id ? "700" : "500",
@@ -281,6 +282,11 @@ useEffect(() => {
                 </div>
               </div>
             )}
+
+            {/* Search (mobile) */}
+            <button className="btn btn-link text-white p-0 ms-2" onClick={() => setShowMobileSearch(true)} aria-label="Open search">
+              <BsSearch size={20} />
+            </button>
 
             {/* Cart (right) */}
             <div
@@ -426,20 +432,6 @@ useEffect(() => {
           </button>
         </div>
         <div className="as-offcanvas-body p-3 d-flex flex-column gap-3">
-          {/* Search */}
-          <div className="input-group input-group-sm">
-            <span className="input-group-text bg-white">
-              <BsSearch size={14} />
-            </span>
-            <input
-              type="text"
-              className="form-control"
-              placeholder="Search products..."
-              value={searchQuery}
-              onChange={onSearchChange}
-            />
-          </div>
-
           {/* User status */}
           {userRole ? (
             <div className="d-flex align-items-center justify-content-between">
@@ -478,6 +470,38 @@ useEffect(() => {
         </div>
       </div>
       <div className={`as-offcanvas-backdrop ${isSidebarOpen ? "show" : ""}`} onClick={closeSidebar}></div>
+
+      {/* Mobile Search Overlay */}
+      {showMobileSearch && (
+        <div className="as-search-overlay" onClick={() => setShowMobileSearch(false)}>
+          <div className="as-search-card" onClick={(e) => e.stopPropagation()}>
+            <div className="d-flex align-items-center justify-content-between mb-2">
+              <strong>Search products</strong>
+              <button className="btn btn-sm btn-outline-secondary" onClick={() => setShowMobileSearch(false)} aria-label="Close search">
+                <AiOutlineClose />
+              </button>
+            </div>
+            <div className="input-group input-group-sm">
+              <span className="input-group-text bg-white">
+                <BsSearch size={14} />
+              </span>
+              <input
+                type="text"
+                className="form-control"
+                placeholder="Search products..."
+                value={searchQuery}
+                onChange={onSearchChange}
+                autoFocus
+              />
+              {searchQuery && (
+                <button className="btn btn-outline-secondary" onClick={() => onSearchChange({ target: { value: "" } })}>
+                  Clear
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
