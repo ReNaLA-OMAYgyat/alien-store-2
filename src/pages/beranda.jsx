@@ -1,5 +1,5 @@
 // src/pages/Home.jsx
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap/dist/js/bootstrap.bundle.min.js";
 import api from "../api";
@@ -7,12 +7,14 @@ import ProductCard from "../components/card";
 import HomeCarousel from "../components/carousel";
 
 export default function Home() {
-  const [products, setProducts] = useState([]);
+  const [products, setProducts] = useState([]); // displayed list
+  const [allProducts, setAllProducts] = useState([]); // full list for filtering
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [selectedSubcategory, setSelectedSubcategory] = useState(null);
+  const [searchQuery, setSearchQuery] = useState("");
 
   // ✅ Fetch products (initial load)
   const fetchProducts = async () => {
@@ -25,7 +27,8 @@ export default function Home() {
         ? res.data
         : res.data.data || [];
 
-      setProducts(productsData.slice(0, 4));
+      setAllProducts(productsData);
+      setProducts(productsData.slice(0, 4)); // default landing view
     } catch (err) {
       console.error("Error fetching products:", err);
       setError("Gagal memuat produk");
@@ -34,24 +37,34 @@ export default function Home() {
     }
   };
 
-  // ✅ Fetch products filtered by subcategory
-  const fetchProductsBySubcategory = async (subcategoryId) => {
-    try {
-      const res = await api.get("/user-products");
-      const productsData = Array.isArray(res.data)
-        ? res.data
-        : res.data.data || [];
+  // Recompute display list whenever filters/search change
+  const applyFilters = useCallback(() => {
+    let list = Array.isArray(allProducts) ? [...allProducts] : [];
 
-      const filtered = productsData.filter(
-        (prod) => prod.subcategory_id === subcategoryId
-      );
-
-      setProducts(filtered);
-      setSelectedSubcategory(subcategoryId);
-    } catch (err) {
-      console.error("Error filtering products:", err);
+    if (selectedSubcategory) {
+      list = list.filter((prod) => prod.subcategory_id === selectedSubcategory);
     }
-  };
+
+    if (searchQuery) {
+      const q = searchQuery.toLowerCase();
+      list = list.filter(
+        (p) =>
+          p.nama?.toLowerCase().includes(q) ||
+          p.merk?.toLowerCase().includes(q) ||
+          String(p.id).includes(q)
+      );
+    }
+
+    if (!searchQuery && !selectedSubcategory) {
+      setProducts(list.slice(0, 4));
+    } else {
+      setProducts(list);
+    }
+  }, [allProducts, selectedSubcategory, searchQuery]);
+
+  useEffect(() => {
+    applyFilters();
+  }, [applyFilters]);
 
   const handleAddToCart = (product) => {
     window.dispatchEvent(new CustomEvent("cartUpdated", { detail: { increment: 1 } }));
@@ -70,14 +83,21 @@ export default function Home() {
       setSelectedCategory(e.detail.categoryId);
       setSelectedSubcategory(null);
     };
-    const handleSubcategory = (e) => fetchProductsBySubcategory(e.detail.subcategoryId);
+    const handleSubcategory = (e) => {
+      setSelectedSubcategory(e.detail.subcategoryId);
+    };
+    const handleSearch = (e) => {
+      setSearchQuery(e.detail?.query || "");
+    };
 
     window.addEventListener("categorySelected", handleCategory);
     window.addEventListener("subcategorySelected", handleSubcategory);
+    window.addEventListener("productSearch", handleSearch);
 
     return () => {
       window.removeEventListener("categorySelected", handleCategory);
       window.removeEventListener("subcategorySelected", handleSubcategory);
+      window.removeEventListener("productSearch", handleSearch);
     };
   }, []);
 

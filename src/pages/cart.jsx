@@ -1,6 +1,6 @@
 // src/CartPage.jsx
 import React, { useEffect, useState } from "react";
-import axios from "axios";
+import api from "../api";
 import { useNavigate } from "react-router-dom";
 
 export default function CartPage() {
@@ -33,10 +33,7 @@ export default function CartPage() {
     }
 
     try {
-      const res = await axios.get("http://localhost:8000/api/carts", {
-        headers: { Authorization: "Bearer " + token },
-      });
-
+      const res = await api.get("/carts");
       const mergedItems = mergeCartItems(res.data || []);
       setCartItems(mergedItems);
     } catch (err) {
@@ -84,8 +81,7 @@ export default function CartPage() {
     }
 
     try {
-      await axios.delete(`http://localhost:8000/api/carts/${cartId}`, {
-        headers: { Authorization: "Bearer " + token },
+      await api.delete(`/carts/${cartId}`, {
         data: { product_id: productId },
       });
       await refreshCarts();
@@ -108,12 +104,7 @@ export default function CartPage() {
         return;
       }
 
-      await axios.put(
-        `http://localhost:8000/api/carts/${cartId}`,
-        { product_id: productId, qty: newQty },
-        { headers: { Authorization: "Bearer " + token } }
-      );
-
+      await api.put(`/carts/${cartId}`, { product_id: productId, qty: newQty });
       await refreshCarts();
     } catch (err) {
       console.error("Error updating quantity:", err.response?.data || err);
@@ -153,9 +144,7 @@ export default function CartPage() {
         return;
       }
 
-      const res = await axios.post("http://localhost:8000/api/transaksi", payload, {
-        headers: { Authorization: "Bearer " + token },
-      });
+      const res = await api.post("/transaksi", payload);
 
       if (res.data.redirect_url) {
         window.location.href = res.data.redirect_url;

@@ -8,3 +8,65 @@
 body {
   font-family: "Coolvetica", sans-serif;
 }
+
+/* Offcanvas for mobile navbar */
+.as-offcanvas {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 280px;
+  max-width: 85vw;
+  height: 100vh;
+  background: #ffffff;
+  box-shadow: 0 0 20px rgba(0,0,0,0.15);
+  transform: translateX(-100%);
+  transition: transform 0.25s ease-in-out;
+  z-index: 1045; /* slightly above .modal-backdrop (1040) */
+}
+.as-offcanvas.open {
+  transform: translateX(0);
+}
+.as-offcanvas-header {
+  background: #fff;
+}
+.as-offcanvas-body {
+  overflow-y: auto;
+  height: calc(100vh - 56px);
+}
+.as-offcanvas-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.4);
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  z-index: 1040;
+  pointer-events: none;
+}
+.as-offcanvas-backdrop.show {
+  opacity: 1;
+  pointer-events: auto;
+}
+body.as-no-scroll {
+  overflow: hidden;
+}
+
+/* Search overlay (mobile) */
+.as-search-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.5);
+  z-index: 1055;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding-top: 72px; /* leave space for navbar */
+}
+.as-search-card {
+  width: 100%;
+  max-width: 560px;
+  margin: 0 12px;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.25);
+  padding: 12px;
+}

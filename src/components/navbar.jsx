@@ -1,12 +1,12 @@
 // src/components/Navbar.jsx
 import React, { useState, useEffect } from "react";
-import { BsLightning, BsPerson, BsBag } from "react-icons/bs";
-import { AiOutlineMenu } from "react-icons/ai";
+import { BsLightning, BsPerson, BsBag, BsSearch } from "react-icons/bs";
+import { AiOutlineMenu, AiOutlineClose } from "react-icons/ai";
 import { useNavigate, useLocation, Link } from "react-router-dom";
 import api from "../api";
 
-// ✅ Pre-placed categories (instant render)
-const defaultCategories = [
+// ✅ Pre-placed fallback categories (in case API unavailable)
+const fallbackCategories = [
   { id: 1, name: "Fashion" },
   { id: 2, name: "F&B" },
   { id: 3, name: "Sembako" },
@@ -18,11 +18,14 @@ export default function Navbar() {
 
   const [userRole, setUserRole] = useState(localStorage.getItem("role") || null);
   const [cartCount, setCartCount] = useState(0);
-  const [categories] = useState(defaultCategories);
+  const [categories, setCategories] = useState(fallbackCategories);
   const [subcategories, setSubcategories] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [selectedSubcategory, setSelectedSubcategory] = useState(null);
   const [subLoading, setSubLoading] = useState(true);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [showMobileCategoryMenu, setShowMobileCategoryMenu] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
 
   const getCartItemCount = (carts) => {
     let merged = {};
@@ -45,20 +48,43 @@ export default function Navbar() {
     }
   };
 
-  const fetchCategories = async () => {
+const fetchTaxonomies = async () => {
+    // Load subcategories (try user-specific then public)
     try {
       setSubLoading(true);
-      const subRes = await api.get("/user-login-subcategories");
-      setSubcategories(subRes.data || []);
+      let subRes;
+      try {
+        subRes = await api.get("/user-login-subcategories");
+      } catch (e) {
+        // fallback if route is not available or unauthorized
+        subRes = await api.get("/subcategories");
+      }
+      setSubcategories(Array.isArray(subRes.data) ? subRes.data : subRes.data?.data || []);
     } catch (err) {
       console.error("Error fetching subcategories:", err);
+      setSubcategories([]);
     } finally {
       setSubLoading(false);
     }
+
+    // Load categories (try user-specific then public)
+    try {
+      let catRes;
+      try {
+        catRes = await api.get("/user-login-categories");
+      } catch (e) {
+        catRes = await api.get("/categories");
+      }
+      const data = Array.isArray(catRes.data) ? catRes.data : catRes.data?.data || [];
+      if (data.length) setCategories(data);
+    } catch (err) {
+      console.warn("Using fallback categories due to error loading categories:", err);
+      // keep fallback categories
+    }
   };
 
-  useEffect(() => {
-    fetchCategories();
+useEffect(() => {
+    fetchTaxonomies();
     if (userRole === "User") fetchCartCount();
 
     const handleLogin = (e) => {
@@ -85,6 +111,16 @@ export default function Navbar() {
     };
   }, [userRole]);
 
+  // prevent body scroll when sidebar open
+  useEffect(() => {
+    if (isSidebarOpen) document.body.classList.add("as-no-scroll");
+    else document.body.classList.remove("as-no-scroll");
+    return () => document.body.classList.remove("as-no-scroll");
+  }, [isSidebarOpen]);
+
+  const openSidebar = () => setIsSidebarOpen(true);
+  const closeSidebar = () => setIsSidebarOpen(false);
+
   const handleLogoutClick = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("role");
@@ -92,6 +128,7 @@ export default function Navbar() {
     setCartCount(0);
     window.dispatchEvent(new Event("userLogout"));
     navigate("/login");
+    closeSidebar();
   };
 
   const handleCartClick = () => {
@@ -102,6 +139,7 @@ export default function Navbar() {
   const selectCategory = (cat) => {
     setSelectedCategory(cat.id);
     setSelectedSubcategory(null);
+    setShowMobileCategoryMenu(false);
     window.dispatchEvent(
       new CustomEvent("categorySelected", { detail: { categoryId: cat.id } })
     );
@@ -119,6 +157,14 @@ export default function Navbar() {
 
   const onHomeClick = () => {
     navigate("/beranda");
+    setShowMobileCategoryMenu(false);
+    closeSidebar();
+  };
+
+  const onSearchChange = (e) => {
+    const q = e.target.value;
+    setSearchQuery(q);
+    window.dispatchEvent(new CustomEvent("productSearch", { detail: { query: q } }));
   };
 
   // 👇 only show categories/subcategories if on Home page (/ or /beranda)
@@ -128,15 +174,19 @@ export default function Navbar() {
     <div className="w-100 sticky-top" style={{ zIndex: 1030 }}>
       {/* Top Navbar */}
       <div className="bg-primary text-white">
-        <div className="container-fluid py-3 d-flex align-items-center">
-          {/* Left menu */}
-          <div className="me-3 d-flex align-items-center">
+        <div className="container-fluid py-3 d-flex align-items-center position-relative">
+          {/* Left menu - mobile */}
+          <button
+            className="btn btn-link text-white p-0 me-2 d-inline d-md-none"
+            onClick={openSidebar}
+            aria-label="Open menu"
+          >
             <AiOutlineMenu size={24} />
-          </div>
+          </button>
 
-          {/* Branding */}
+          {/* Branding (desktop only) */}
           <div
-            className="d-flex align-items-center me-4"
+            className="d-none d-md-flex align-items-center me-2"
             style={{ cursor: "pointer" }}
             onClick={onHomeClick}
           >
@@ -149,23 +199,9 @@ export default function Navbar() {
             <span className="fw-bold fs-4">Yofte.</span>
           </div>
 
-          {/* ✅ Home button always visible with logo */}
-          <span
-            onClick={onHomeClick}
-            className="nav-link px-2 py-1 d-flex align-items-center gap-1"
-            style={{
-              cursor: "pointer",
-              color: isHomePage ? "#fff" : "rgba(255,255,255,0.8)",
-              fontWeight: "600",
-            }}
-          >
-            <BsLightning size={16} className="me-1" />
-            Home
-          </span>
-
-          {/* ✅ Categories only on Home page */}
+          {/* Absolutely centered categories (desktop, home only) */}
           {isHomePage && (
-            <div className="d-flex flex-grow-1 justify-content-center gap-3">
+            <div className="position-absolute start-50 translate-middle-x d-none d-md-flex align-items-center gap-3 flex-wrap">
               {categories.map((cat) => (
                 <span
                   key={cat.id}
@@ -176,7 +212,7 @@ export default function Navbar() {
                     color:
                       selectedCategory === cat.id
                         ? "#fff"
-                        : "rgba(255,255,255,0.6)",
+                        : "rgba(255,255,255,0.8)",
                     borderBottom:
                       selectedCategory === cat.id
                         ? "2px solid #fff"
@@ -191,8 +227,81 @@ export default function Navbar() {
             </div>
           )}
 
-          {/* Cart & User */}
-          <div className="d-flex align-items-center ms-auto gap-3">
+          {/* Desktop search only */}
+          <div className="d-none d-md-flex align-items-center ms-auto" style={{ maxWidth: 360 }}>
+            <div className="input-group input-group-sm">
+              <span className="input-group-text bg-white">
+                <BsSearch size={14} />
+              </span>
+              <input
+                type="text"
+                className="form-control"
+                placeholder="Search products..."
+                value={searchQuery}
+                onChange={onSearchChange}
+              />
+            </div>
+          </div>
+
+          {/* Mobile main navbar content: Home (left), Categories (center), Cart (right) */}
+          <div className="d-flex d-md-none align-items-center gap-2 flex-grow-1 ms-2">
+            {/* Home (left) */}
+            <button className="btn btn-sm btn-light fw-semibold" onClick={onHomeClick}>
+              Home
+            </button>
+
+            {/* Categories (center) */}
+            {isHomePage && (
+              <div className="flex-grow-1 d-flex justify-content-center overflow-auto">
+                <div className="d-flex flex-nowrap gap-3 px-2">
+                  {categories.map((cat) => (
+                    <span
+                      key={cat.id}
+                      onClick={() => selectCategory(cat)}
+                      className="px-2 py-1 rounded"
+                      style={{
+                        cursor: "pointer",
+                        color:
+                          selectedCategory === cat.id
+                            ? "#0d6efd"
+                            : "rgba(255,255,255,0.9)",
+                        borderBottom:
+                          selectedCategory === cat.id
+                            ? "2px solid #0d6efd"
+                            : "2px solid transparent",
+                        fontWeight:
+                          selectedCategory === cat.id ? "700" : "500",
+                        transition: "all 0.2s",
+                        whiteSpace: "nowrap",
+                      }}
+                    >
+                      {cat.name}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Cart (right) */}
+            <div
+              className="position-relative ms-2"
+              style={{ cursor: "pointer" }}
+              onClick={handleCartClick}
+            >
+              <BsBag size={22} />
+              {cartCount > 0 && (
+                <span
+                  className="position-absolute top-0 start-100 translate-middle badge rounded-circle bg-light text-primary p-1"
+                  style={{ fontSize: "0.6rem" }}
+                >
+                  {displayCartCount}
+                </span>
+              )}
+            </div>
+          </div>
+
+          {/* Cart & User (desktop only) */}
+          <div className="d-none d-md-flex align-items-center ms-3 gap-3">
             {/* Cart */}
             <div
               className="position-relative"
@@ -242,6 +351,7 @@ export default function Navbar() {
         </div>
       </div>
 
+
       {/* ✅ Subcategories only on Home page */}
       {isHomePage && selectedCategory && (
         <div className="bg-light py-2 border-bottom">
@@ -289,6 +399,85 @@ export default function Navbar() {
           </div>
         </div>
       )}
+
+      {/* Mobile Sidebar / Offcanvas */}
+      <div
+        className={`as-offcanvas ${isSidebarOpen ? "open" : ""}`}
+        role="dialog"
+        aria-modal="true"
+        aria-label="Main menu"
+      >
+        <div className="as-offcanvas-header d-flex align-items-center justify-content-between border-bottom px-3 py-3">
+          <div
+            className="d-flex align-items-center"
+            style={{ cursor: "pointer" }}
+            onClick={onHomeClick}
+          >
+            <div
+              className="rounded-circle d-flex align-items-center justify-content-center p-2 me-2"
+              style={{ background: "linear-gradient(to right, #a78bfa, #f9a8d4)" }}
+            >
+              <BsLightning className="text-white" />
+            </div>
+            <span className="fw-bold">Yofte.</span>
+          </div>
+          <button className="btn btn-link text-dark p-0" onClick={closeSidebar} aria-label="Close menu">
+            <AiOutlineClose size={24} />
+          </button>
+        </div>
+        <div className="as-offcanvas-body p-3 d-flex flex-column gap-3">
+          {/* Search */}
+          <div className="input-group input-group-sm">
+            <span className="input-group-text bg-white">
+              <BsSearch size={14} />
+            </span>
+            <input
+              type="text"
+              className="form-control"
+              placeholder="Search products..."
+              value={searchQuery}
+              onChange={onSearchChange}
+            />
+          </div>
+
+          {/* User status */}
+          {userRole ? (
+            <div className="d-flex align-items-center justify-content-between">
+              <div className="d-flex align-items-center gap-2">
+                <BsPerson />
+                <span className="fw-semibold">Status: {userRole}</span>
+              </div>
+              <div className="d-flex gap-2">
+                {userRole === "Admin" && (
+                  <button className="btn btn-warning btn-sm" onClick={() => { navigate("/dashboard"); closeSidebar(); }}>
+                    Dashboard
+                  </button>
+                )}
+                <button className="btn btn-outline-danger btn-sm" onClick={handleLogoutClick}>
+                  Logout
+                </button>
+              </div>
+            </div>
+          ) : (
+            <div className="d-flex align-items-center justify-content-between">
+              <div className="d-flex align-items-center gap-2">
+                <BsPerson />
+                <span className="fw-semibold">Guest</span>
+              </div>
+              <Link to="/login" className="btn btn-primary btn-sm" onClick={closeSidebar}>
+                Sign In
+              </Link>
+            </div>
+          )}
+
+          {/* Links */}
+          <div className="list-group">
+            <button className="list-group-item list-group-item-action" onClick={onHomeClick}>Home</button>
+          </div>
+
+        </div>
+      </div>
+      <div className={`as-offcanvas-backdrop ${isSidebarOpen ? "show" : ""}`} onClick={closeSidebar}></div>
     </div>
   );
 }
