@@ -7,22 +7,6 @@ export default function ProductCard({ product }) {
   const [localStock, setLocalStock] = useState(product.stok);
   const isOutOfStock = !localStock || localStock <= 0;
 
-  const updateStockInDB = async (newStock) => {
-    try {
-      await axios.put(
-        `http://localhost:8000/api/products/${product.id}`,
-        { stok: newStock },
-        {
-          headers: {
-            Authorization: "Bearer " + localStorage.getItem("token"),
-          },
-        }
-      );
-    } catch (err) {
-      console.error("Error updating stock in DB:", err.response?.data || err);
-    }
-  };
-
   const handleAddToCart = async () => {
     if (isOutOfStock) {
       alert("Produk ini habis, tidak bisa ditambahkan ke keranjang.");
@@ -36,10 +20,6 @@ export default function ProductCard({ product }) {
         { headers: { Authorization: "Bearer " + localStorage.getItem("token") } }
       );
 
-      const newStock = localStock - 1;
-      setLocalStock(newStock);
-      await updateStockInDB(newStock);
-
       alert(`${product.nama} berhasil ditambahkan ke keranjang!`);
     } catch (err) {
       console.error("Error adding to cart:", err.response?.data || err);
@@ -52,8 +32,24 @@ export default function ProductCard({ product }) {
       alert("Produk habis, tidak bisa dibeli.");
       return;
     }
-    await handleAddToCart();
-    window.location.href = "/cart";
+
+    try {
+      const response = await axios.post(
+        "http://localhost:8000/api/transaksi",
+        { product_id: product.id, qty: 1 }, // ✅ langsung kirim product ke transaksi
+        { headers: { Authorization: "Bearer " + localStorage.getItem("token") } }
+      );
+
+      const redirectUrl = response.data.redirect_url;
+      if (redirectUrl) {
+        window.location.href = redirectUrl; // ✅ langsung lempar ke Midtrans checkout
+      } else {
+        alert("Checkout gagal: redirect_url tidak ditemukan.");
+      }
+    } catch (err) {
+      console.error("Error during checkout:", err.response?.data || err);
+      alert("Gagal melakukan checkout.");
+    }
   };
 
   return (
