@@ -194,9 +194,10 @@ export default function Product() {
   };
 
   return (
-    <div className="d-flex vh-100">
+    <div className="d-flex">
       <Sidebar />
-      <div className="flex-grow-1 bg-light p-4">
+      <div className="flex-grow-1 bg-light p-4"
+        style={{ marginLeft: 250, minHeight: "100vh" }}>
         <h2 className="fw-bold mb-4">Dashboard Produk</h2>
 
         <div className="d-flex flex-column flex-lg-row align-items-lg-center justify-content-between gap-2 mb-3">
