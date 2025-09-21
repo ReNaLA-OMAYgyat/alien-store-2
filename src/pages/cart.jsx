@@ -7,6 +7,8 @@ export default function CartPage() {
   const navigate = useNavigate();
   const [cartItems, setCartItems] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [selectedItems, setSelectedItems] = useState([]);
+  const [selectAll, setSelectAll] = useState(false);
 
   // Merge duplicate products across carts
   const mergeCartItems = (carts) => {
@@ -53,7 +55,27 @@ export default function CartPage() {
     refreshCarts();
   }, []);
 
-  // ✅ Use DELETE instead of PUT for removing products
+  // ✅ Frontend-only select/deselect item
+  const toggleSelectItem = (productId) => {
+    if (selectedItems.includes(productId)) {
+      setSelectedItems(selectedItems.filter((id) => id !== productId));
+    } else {
+      setSelectedItems([...selectedItems, productId]);
+    }
+  };
+
+  // ✅ Frontend-only select all
+  const toggleSelectAll = () => {
+    if (selectAll) {
+      setSelectedItems([]);
+      setSelectAll(false);
+    } else {
+      setSelectedItems(cartItems.map((item) => item.product_id));
+      setSelectAll(true);
+    }
+  };
+
+  // Remove product from cart (still API call)
   const removeProduct = async (cartId, productId) => {
     const token = localStorage.getItem("token");
     if (!token) {
@@ -64,7 +86,7 @@ export default function CartPage() {
     try {
       await axios.delete(`http://localhost:8000/api/carts/${cartId}`, {
         headers: { Authorization: "Bearer " + token },
-        data: { product_id: productId }, // Laravel needs body with DELETE
+        data: { product_id: productId },
       });
       await refreshCarts();
     } catch (err) {
@@ -72,6 +94,7 @@ export default function CartPage() {
     }
   };
 
+  // Update quantity (still API call)
   const updateQuantity = async (cartId, productId, newQty) => {
     const token = localStorage.getItem("token");
     if (!token) {
@@ -97,7 +120,60 @@ export default function CartPage() {
     }
   };
 
-  const totalPrice = cartItems.reduce(
+  // ✅ Checkout logic (only here we call backend)
+  const handleCheckout = async () => {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      navigate("/login");
+      return;
+    }
+
+    try {
+      let payload = {};
+
+      if (selectAll) {
+        const cartId = cartItems[0]?.cartId;
+        if (!cartId) {
+          alert("Tidak ada cart untuk checkout.");
+          return;
+        }
+        payload = { cart_id: cartId };
+      } else if (selectedItems.length === 1) {
+        const product = cartItems.find(
+          (item) => item.product_id === selectedItems[0]
+        );
+        payload = {
+          product_id: product.product_id,
+          qty: product.qty,
+        };
+      } else {
+        alert(
+          "Checkout produk langsung hanya bisa 1 item. Untuk lebih dari 1, gunakan Select All."
+        );
+        return;
+      }
+
+      const res = await axios.post("http://localhost:8000/api/transaksi", payload, {
+        headers: { Authorization: "Bearer " + token },
+      });
+
+      if (res.data.redirect_url) {
+        window.location.href = res.data.redirect_url;
+      } else {
+        alert("Checkout gagal: redirect_url tidak ditemukan.");
+      }
+    } catch (err) {
+      console.error("Error during checkout:", err.response?.data || err);
+      alert(err.response?.data?.message || "Checkout gagal");
+    }
+  };
+
+  // Selected products
+  const selectedProducts = cartItems.filter((item) =>
+    selectedItems.includes(item.product_id)
+  );
+
+  const totalPrice = selectedProducts.reduce(
     (sum, item) => sum + (item.product?.harga || 0) * item.qty,
     0
   );
@@ -108,6 +184,17 @@ export default function CartPage() {
     <div className="container my-5">
       <h1 className="mb-4">Shopping Cart</h1>
 
+      {/* Select All */}
+      <div className="mb-3 d-flex align-items-center">
+        <input
+          type="checkbox"
+          checked={selectAll}
+          onChange={toggleSelectAll}
+          className="form-check-input me-2"
+        />
+        <label className="form-check-label">Select All</label>
+      </div>
+
       <div className="row">
         <div className="col-md-8">
           {cartItems.length > 0 ? (
@@ -116,14 +203,34 @@ export default function CartPage() {
                 key={item.product_id}
                 className="card shadow-sm mb-3 p-3 d-flex flex-row align-items-center justify-content-between"
               >
-                <div className="d-flex align-items-center gap-3">
-                  <img
-                    src={item.product.image_url || "/contoh.png"}
-                    alt={item.product.nama}
-                    className="rounded"
-                    width="80"
-                    height="80"
-                  />
+                {/* Checkbox */}
+                <input
+                  type="checkbox"
+                  checked={selectedItems.includes(item.product_id)}
+                  onChange={() => toggleSelectItem(item.product_id)}
+                  className="form-check-input me-3"
+                />
+
+                <div className="d-flex align-items-center gap-3 flex-grow-1">
+                  <div
+                    style={{
+                      width: "80px",
+                      height: "80px",
+                      overflow: "hidden",
+                      borderRadius: "8px",
+                      flexShrink: 0,
+                    }}
+                  >
+                    <img
+                      src={item.product.image_url || "/contoh.png"}
+                      alt={item.product.nama}
+                      style={{
+                        width: "100%",
+                        height: "100%",
+                        objectFit: "cover",
+                      }}
+                    />
+                  </div>
                   <div>
                     <h5 className="mb-1">{item.product.nama}</h5>
                     <p className="text-muted mb-0">Rp {item.product.harga}</p>
@@ -157,7 +264,7 @@ export default function CartPage() {
                   </button>
                 </div>
 
-                <p className="fw-bold mb-0">
+                <p className="fw-bold mb-0 text-nowrap">
                   Rp {item.product.harga * item.qty}
                 </p>
               </div>
@@ -172,22 +279,35 @@ export default function CartPage() {
           <div className="card shadow-sm">
             <div className="card-body">
               <h5 className="card-title">Order Summary</h5>
-              <div className="d-flex justify-content-between mb-2">
-                <span>Subtotal</span>
-                <span>Rp {totalPrice}</span>
-              </div>
-              <div className="d-flex justify-content-between mb-2">
-                <span>Shipping</span>
-                <span>Rp 20000</span>
-              </div>
-              <hr />
-              <div className="d-flex justify-content-between fw-bold">
-                <span>Total</span>
-                <span>Rp {totalPrice + 20000}</span>
-              </div>
-              <button className="btn btn-primary w-100 mt-3">
-                Proceed to Checkout
-              </button>
+
+              {selectedProducts.length > 0 ? (
+                <>
+                  {selectedProducts.map((item) => (
+                    <div
+                      key={item.product_id}
+                      className="d-flex justify-content-between mb-2"
+                    >
+                      <span>
+                        {item.product.nama} × {item.qty}
+                      </span>
+                      <span>Rp {item.product.harga * item.qty}</span>
+                    </div>
+                  ))}
+                  <hr />
+                  <div className="d-flex justify-content-between fw-bold">
+                    <span>Total</span>
+                    <span>Rp {totalPrice}</span>
+                  </div>
+                  <button
+                    className="btn btn-primary w-100 mt-3"
+                    onClick={handleCheckout}
+                  >
+                    Proceed to Checkout
+                  </button>
+                </>
+              ) : (
+                <p className="text-muted">Pilih produk untuk checkout.</p>
+              )}
             </div>
           </div>
         </div>

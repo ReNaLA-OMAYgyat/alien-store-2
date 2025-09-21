@@ -1,11 +1,20 @@
-// src/components/ProductCard.jsx
 import React, { useState } from "react";
 import axios from "axios";
 import "./card.css";
 
 export default function ProductCard({ product }) {
   const [localStock, setLocalStock] = useState(product.stok);
+  const [quantity, setQuantity] = useState(1);
+
   const isOutOfStock = !localStock || localStock <= 0;
+
+  const decreaseQty = () => {
+    if (quantity > 1) setQuantity(quantity - 1);
+  };
+
+  const increaseQty = () => {
+    if (quantity < localStock) setQuantity(quantity + 1);
+  };
 
   const handleAddToCart = async () => {
     if (isOutOfStock) {
@@ -16,7 +25,7 @@ export default function ProductCard({ product }) {
     try {
       await axios.post(
         "http://localhost:8000/api/carts",
-        { product_id: product.id, qty: 1 },
+        { product_id: product.id, qty: quantity },
         { headers: { Authorization: "Bearer " + localStorage.getItem("token") } }
       );
 
@@ -36,13 +45,13 @@ export default function ProductCard({ product }) {
     try {
       const response = await axios.post(
         "http://localhost:8000/api/transaksi",
-        { product_id: product.id, qty: 1 }, // ✅ langsung kirim product ke transaksi
+        { product_id: product.id, qty: quantity },
         { headers: { Authorization: "Bearer " + localStorage.getItem("token") } }
       );
 
       const redirectUrl = response.data.redirect_url;
       if (redirectUrl) {
-        window.location.href = redirectUrl; // ✅ langsung lempar ke Midtrans checkout
+        window.location.href = redirectUrl;
       } else {
         alert("Checkout gagal: redirect_url tidak ditemukan.");
       }
@@ -53,7 +62,7 @@ export default function ProductCard({ product }) {
   };
 
   return (
-    <div className="col-6 col-md-3">
+    <div className="col-6 col-md-3 mb-4">
       <div className={`product-card ${isOutOfStock ? "out-of-stock" : ""}`}>
         <div className="product-img">
           {isOutOfStock && (
@@ -67,12 +76,26 @@ export default function ProductCard({ product }) {
             className={`img-fluid ${isOutOfStock ? "dimmed" : ""}`}
           />
         </div>
+
         <div className="product-body">
           <h6 className="product-title">{product.nama}</h6>
-          <p className="product-price">Rp {product.harga}</p>
-          <p className="product-stock">
-            {isOutOfStock ? "Stok Habis" : `Sisa stok: ${localStock}`}
-          </p>
+
+          <div className="price-stock-qty">
+            <span className="product-price">Rp {product.harga}</span>
+
+            {!isOutOfStock && (
+              <div className="stock-qty-row">
+                <span className="product-stock">Stok: {localStock}</span>
+
+                <div className="quantity-selector-horizontal">
+                  <button className="qty-btn" onClick={decreaseQty}>-</button>
+                  <span className="qty-value">{quantity}</span>
+                  <button className="qty-btn" onClick={increaseQty}>+</button>
+                </div>
+              </div>
+            )}
+          </div>
+
           <div className="product-actions">
             <button
               className="btn-cart"
