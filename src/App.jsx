@@ -9,6 +9,9 @@ import Product from "./pages/product";
 import Cart from "./pages/cart";
 import ErrorBoundary from "./ErrorBoundary";
 import Admin from "./pages/admin";
+import Reports from "./pages/reports";
+import Orders from "./pages/orders";
+import Customers from "./pages/customer";
 export default function App() {
   const location = useLocation();
 
@@ -19,6 +22,9 @@ export default function App() {
         location.pathname !== "/dashboard" &&
         location.pathname !== "/product" && 
         location.pathname !== "/admin" && 
+        location.pathname !== "/reports" && 
+        location.pathname !== "/orders" && 
+        location.pathname !== "/customer" && 
         <Navbar />}
       <Routes>
         <Route path="/" element={<Navigate to="/beranda" replace />} />
@@ -46,6 +52,30 @@ export default function App() {
           element={
             <PrivateRouteAdmin>
               <Admin />
+            </PrivateRouteAdmin>
+          }
+        />
+        <Route
+          path="/reports"
+          element={
+            <PrivateRouteAdmin>
+              <Reports />
+            </PrivateRouteAdmin>
+          }
+        />
+        <Route
+          path="/orders"
+          element={
+            <PrivateRouteAdmin>
+              <Orders />
+            </PrivateRouteAdmin>
+          }
+        />
+        <Route
+          path="/customer"
+          element={
+            <PrivateRouteAdmin>
+              <Customers />
             </PrivateRouteAdmin>
           }
         />

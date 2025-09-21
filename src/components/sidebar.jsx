@@ -16,7 +16,7 @@ export default function Sidebar() {
     { name: "Subcategories", path: "/dashboard", icon: "bi-folder2" },
     { name: "Products", path: "/product", icon: "bi-box-seam" },
     { name: "Orders", path: "/orders", icon: "bi-bag-check" },
-    { name: "Customers", path: "/customers", icon: "bi-people" },
+    { name: "Customers", path: "/customer", icon: "bi-people" },
     { name: "Reports", path: "/reports", icon: "bi-graph-up" },
   ];
 
