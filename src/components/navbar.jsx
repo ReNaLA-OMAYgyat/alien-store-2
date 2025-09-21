@@ -5,19 +5,27 @@ import { AiOutlineMenu } from "react-icons/ai";
 import { useNavigate, Link } from "react-router-dom";
 import api from "../api";
 
+// ✅ Pre-placed categories (instant render)
+const defaultCategories = [
+  { id: 1, name: "Fashion" },
+  { id: 2, name: "F&B" },
+  { id: 3, name: "Sembako" },
+];
+
 export default function Navbar() {
   const navigate = useNavigate();
   const [userRole, setUserRole] = useState(localStorage.getItem("role") || null);
   const [cartCount, setCartCount] = useState(0);
-  const [categories, setCategories] = useState([]);
+  const [categories, setCategories] = useState(defaultCategories); // start with default
   const [subcategories, setSubcategories] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [selectedSubcategory, setSelectedSubcategory] = useState(null);
+  const [subLoading, setSubLoading] = useState(true);
 
   const getCartItemCount = (carts) => {
     let merged = {};
-    carts.forEach(cart =>
-      cart.items.forEach(item => {
+    carts.forEach((cart) =>
+      cart.items.forEach((item) => {
         if (merged[item.product_id]) merged[item.product_id].qty += item.qty;
         else merged[item.product_id] = { ...item };
       })
@@ -37,17 +45,22 @@ export default function Navbar() {
 
   const fetchCategories = async () => {
     try {
+      setSubLoading(true);
       const catRes = await api.get("/user-login-categories");
       const subRes = await api.get("/user-login-subcategories");
 
-      const uniqueCategories = Array.from(
-        new Map(catRes.data.map(cat => [cat.id, cat])).values()
-      );
+      if (catRes.data?.length > 0) {
+        const uniqueCategories = Array.from(
+          new Map(catRes.data.map((cat) => [cat.id, cat])).values()
+        );
+        setCategories(uniqueCategories);
+      }
 
-      setCategories(uniqueCategories);
       setSubcategories(subRes.data || []);
     } catch (err) {
       console.error("Error fetching categories:", err);
+    } finally {
+      setSubLoading(false);
     }
   };
 
@@ -55,7 +68,7 @@ export default function Navbar() {
     fetchCategories();
     if (userRole === "User") fetchCartCount();
 
-    const handleLogin = e => {
+    const handleLogin = (e) => {
       setUserRole(e.detail.role);
       if (e.detail.role === "User") fetchCartCount();
     };
@@ -63,8 +76,8 @@ export default function Navbar() {
       setUserRole(null);
       setCartCount(0);
     };
-    const handleCartUpdate = e => {
-      if (e.detail?.increment) setCartCount(prev => prev + e.detail.increment);
+    const handleCartUpdate = (e) => {
+      if (e.detail?.increment) setCartCount((prev) => prev + e.detail.increment);
       else fetchCartCount();
     };
 
@@ -134,7 +147,7 @@ export default function Navbar() {
 
           {/* Categories */}
           <div className="d-flex flex-grow-1 justify-content-center gap-3">
-            {categories.map(cat => (
+            {categories.map((cat) => (
               <span
                 key={cat.id}
                 onClick={() => selectCategory(cat)}
@@ -142,7 +155,9 @@ export default function Navbar() {
                 style={{
                   cursor: "pointer",
                   color:
-                    selectedCategory === cat.id ? "#fff" : "rgba(255,255,255,0.6)",
+                    selectedCategory === cat.id
+                      ? "#fff"
+                      : "rgba(255,255,255,0.6)",
                   borderBottom:
                     selectedCategory === cat.id
                       ? "2px solid #fff"
@@ -211,30 +226,47 @@ export default function Navbar() {
       {selectedCategory && (
         <div className="bg-light py-2 border-bottom">
           <div className="container-fluid d-flex justify-content-center flex-wrap gap-3">
-            {subcategories
-              .filter(s => s.category_id === selectedCategory)
-              .map(sub => (
+            {subLoading ? (
+              // 🚀 shimmer placeholders
+              Array.from({ length: 4 }).map((_, i) => (
                 <span
-                  key={sub.id}
-                  onClick={() => selectSubcategory(sub)}
+                  key={i}
+                  className="placeholder-glow bg-secondary rounded"
                   style={{
-                    cursor: "pointer",
-                    color:
-                      selectedSubcategory === sub.id
-                        ? "#0d6efd"
-                        : "rgba(0,0,0,0.6)",
-                    borderBottom:
-                      selectedSubcategory === sub.id
-                        ? "2px solid #0d6efd"
-                        : "2px solid transparent",
-                    fontWeight: selectedSubcategory === sub.id ? "600" : "400",
-                    padding: "2px 4px",
-                    transition: "all 0.2s",
+                    width: "80px",
+                    height: "16px",
+                    display: "inline-block",
+                    opacity: 0.5,
                   }}
-                >
-                  {sub.name}
-                </span>
-              ))}
+                ></span>
+              ))
+            ) : (
+              subcategories
+                .filter((s) => s.category_id === selectedCategory)
+                .map((sub) => (
+                  <span
+                    key={sub.id}
+                    onClick={() => selectSubcategory(sub)}
+                    style={{
+                      cursor: "pointer",
+                      color:
+                        selectedSubcategory === sub.id
+                          ? "#0d6efd"
+                          : "rgba(0,0,0,0.6)",
+                      borderBottom:
+                        selectedSubcategory === sub.id
+                          ? "2px solid #0d6efd"
+                          : "2px solid transparent",
+                      fontWeight:
+                        selectedSubcategory === sub.id ? "600" : "400",
+                      padding: "2px 4px",
+                      transition: "all 0.2s",
+                    }}
+                  >
+                    {sub.name}
+                  </span>
+                ))
+            )}
           </div>
         </div>
       )}
