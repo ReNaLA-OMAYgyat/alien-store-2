@@ -244,22 +244,17 @@ useEffect(() => {
             </div>
           </div>
 
-          {/* Mobile main navbar content: Home (left), Categories (center), Cart (right) */}
+          {/* Mobile main navbar content: Categories centered + Search; Home/Cart moved to sidebar */}
           <div className="d-flex d-md-none align-items-center gap-2 flex-grow-1 ms-2">
-            {/* Home (left) */}
-            <button className="btn btn-sm btn-light fw-semibold" onClick={onHomeClick}>
-              Home
-            </button>
-
             {/* Categories (center) */}
             {isHomePage && (
               <div className="flex-grow-1 d-flex justify-content-center overflow-auto">
-                <div className="d-flex flex-nowrap gap-3 px-2">
+                <div className="d-flex flex-nowrap as-cat-row px-2">
                   {categories.map((cat) => (
                     <span
                       key={cat.id}
                       onClick={() => selectCategory(cat)}
-                      className="px-2 py-1 rounded"
+                      className="px-2 py-1 rounded as-cat-chip"
                       style={{
                         cursor: "pointer",
                         color:
@@ -287,23 +282,6 @@ useEffect(() => {
             <button className="btn btn-link text-white p-0 ms-2" onClick={() => setShowMobileSearch(true)} aria-label="Open search">
               <BsSearch size={20} />
             </button>
-
-            {/* Cart (right) */}
-            <div
-              className="position-relative ms-2"
-              style={{ cursor: "pointer" }}
-              onClick={handleCartClick}
-            >
-              <BsBag size={22} />
-              {cartCount > 0 && (
-                <span
-                  className="position-absolute top-0 start-100 translate-middle badge rounded-circle bg-light text-primary p-1"
-                  style={{ fontSize: "0.6rem" }}
-                >
-                  {displayCartCount}
-                </span>
-              )}
-            </div>
           </div>
 
           {/* Cart & User (desktop only) */}
@@ -464,7 +442,15 @@ useEffect(() => {
 
           {/* Links */}
           <div className="list-group">
-            <button className="list-group-item list-group-item-action" onClick={onHomeClick}>Home</button>
+            <button className="list-group-item list-group-item-action d-flex align-items-center justify-content-between" onClick={onHomeClick}>
+              <span><i className="bi bi-house me-2"></i> Home</span>
+            </button>
+            <button className="list-group-item list-group-item-action d-flex align-items-center justify-content-between" onClick={() => { closeSidebar(); handleCartClick(); }}>
+              <span><i className="bi bi-bag me-2"></i> Cart</span>
+              {cartCount > 0 && (
+                <span className="badge bg-primary rounded-pill">{displayCartCount}</span>
+              )}
+            </button>
           </div>
 
         </div>

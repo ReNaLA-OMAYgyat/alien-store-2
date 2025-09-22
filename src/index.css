@@ -70,3 +70,24 @@ body.as-no-scroll {
   box-shadow: 0 10px 30px rgba(0,0,0,0.25);
   padding: 12px;
 }
+
+/* Mobile categories typography and spacing */
+.as-cat-row {
+  gap: 0.75rem;
+}
+.as-cat-chip {
+  font-size: 0.95rem;
+  line-height: 1.2;
+}
+@media (max-width: 420px) {
+  .as-cat-chip {
+    font-size: 0.85rem;
+    padding: 2px 6px !important;
+  }
+}
+@media (max-width: 360px) {
+  .as-cat-chip {
+    font-size: 0.8rem;
+    padding: 2px 4px !important;
+  }
+}
