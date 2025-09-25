@@ -445,6 +445,9 @@ useEffect(() => {
             <button className="list-group-item list-group-item-action d-flex align-items-center justify-content-between" onClick={onHomeClick}>
               <span><i className="bi bi-house me-2"></i> Home</span>
             </button>
+            <Link to="/about" className="list-group-item list-group-item-action" onClick={closeSidebar}>
+              <span><i className="bi bi-info-circle me-2"></i> About</span>
+            </Link>
             <button className="list-group-item list-group-item-action d-flex align-items-center justify-content-between" onClick={() => { closeSidebar(); handleCartClick(); }}>
               <span><i className="bi bi-bag me-2"></i> Cart</span>
               {cartCount > 0 && (

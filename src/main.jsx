@@ -7,6 +7,10 @@ import App from "./App.jsx";
 import "./index.css";
 import "animate.css/animate.min.css";
 import axios from "axios";
+import AOS from "aos";
+import "aos/dist/aos.css";
+// Initialize AOS animations once at startup
+AOS.init({ duration: 700, easing: "ease-out-cubic", once: true });
 
 createRoot(document.getElementById("root")).render(
   <StrictMode>

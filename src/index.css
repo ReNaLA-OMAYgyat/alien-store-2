@@ -85,6 +85,13 @@ body.as-no-scroll {
     padding: 2px 6px !important;
   }
 }
+
+/* Product card tweaks for responsiveness */
+@media (max-width: 576px) {
+  .product-card .product-title {
+    font-size: 0.95rem;
+  }
+}
 @media (max-width: 360px) {
   .as-cat-chip {
     font-size: 0.8rem;

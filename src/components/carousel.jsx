@@ -1,5 +1,6 @@
 // HomeCarousel.jsx
 import React from "react";
+import { motion } from "framer-motion";
 import Images1 from "../assets/images/sepatu.jpg";
 import Images2 from "../assets/images/sembako.jpg";
 import Images3 from "../assets/images/snack.jpg";
@@ -62,24 +63,45 @@ export default function HomeCarousel() {
               key={slide.id}
               className={`carousel-item ${index === 0 ? "active" : ""}`}
             >
-              <img
+              <motion.img
                 src={slide.image}
                 className="d-block w-100"
                 alt={slide.title}
                 style={{
                   maxHeight: "400px",
                   objectFit: "cover",
-                  opacity: 0.7,
+                  opacity: 0.8,
                 }}
+                initial={{ scale: 1.05 }}
+                animate={{ scale: 1 }}
+                transition={{ duration: 1.2 }}
               />
               <div className="carousel-caption d-flex flex-column justify-content-center align-items-center text-center h-100 p-2">
-                <h1 className="text-white fw-bold display-6 display-md-4">
+                <motion.h1
+                  className="text-white fw-bold display-6 display-md-4"
+                  initial={{ y: 20, opacity: 0 }}
+                  animate={{ y: 0, opacity: 1 }}
+                  transition={{ duration: 0.6, delay: 0.1 }}
+                >
                   {slide.title}
-                </h1>
-                <p className="text-white fs-6">{slide.subtitle}</p>
-                <a href={slide.buttonLink} className="btn btn-primary mt-2 mt-md-3 px-3 px-md-4 py-2">
+                </motion.h1>
+                <motion.p
+                  className="text-white fs-6"
+                  initial={{ y: 20, opacity: 0 }}
+                  animate={{ y: 0, opacity: 1 }}
+                  transition={{ duration: 0.6, delay: 0.25 }}
+                >
+                  {slide.subtitle}
+                </motion.p>
+                <motion.a
+                  href={slide.buttonLink}
+                  className="btn btn-primary mt-2 mt-md-3 px-3 px-md-4 py-2"
+                  initial={{ y: 20, opacity: 0 }}
+                  animate={{ y: 0, opacity: 1 }}
+                  transition={{ duration: 0.6, delay: 0.4 }}
+                >
                   {slide.buttonText}
-                </a>
+                </motion.a>
               </div>
             </div>
           ))}

@@ -9,6 +9,7 @@ import Product from "./pages/product";
 import Cart from "./pages/cart";
 import ErrorBoundary from "./ErrorBoundary";
 import Admin from "./pages/admin";
+import AboutPage from "./pages/about";
 export default function App() {
   const location = useLocation();
 
@@ -51,6 +52,7 @@ export default function App() {
         />
         <Route path="/cart" element={<Cart />} />
         <Route path="/beranda" element={<Beranda />} />
+        <Route path="/about" element={<AboutPage />} />
 
         <Route path="*" element={<Navigate to="/beranda" replace />} />
       </Routes>

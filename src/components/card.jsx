@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { motion } from "framer-motion";
 import axios from "axios";
 import "./card.css";
 
@@ -62,18 +63,26 @@ export default function ProductCard({ product }) {
   };
 
   return (
-    <div className="col-6 col-md-3 mb-4">
-      <div className={`product-card ${isOutOfStock ? "out-of-stock" : ""}`}>
+    <div className="col-6 col-sm-6 col-md-4 col-lg-3 mb-4" data-aos="fade-up">
+      <motion.div
+        className={`product-card ${isOutOfStock ? "out-of-stock" : ""}`}
+        initial={{ opacity: 0, y: 12 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, amount: 0.2 }}
+        transition={{ duration: 0.4 }}
+      >
         <div className="product-img">
           {isOutOfStock && (
             <div className="overlay">
               <span className="badge-soldout">Stok Habis</span>
             </div>
           )}
-          <img
+          <motion.img
             src={product.image_url || "/contoh.png"}
             alt={product.nama}
             className={`img-fluid ${isOutOfStock ? "dimmed" : ""}`}
+            whileHover={{ scale: isOutOfStock ? 1 : 1.03 }}
+            transition={{ duration: 0.2 }}
           />
         </div>
 
@@ -96,24 +105,26 @@ export default function ProductCard({ product }) {
             )}
           </div>
 
-          <div className="product-actions">
-            <button
+          <div className="product-actions d-flex gap-2">
+            <motion.button
               className="btn-cart"
               onClick={handleAddToCart}
               disabled={isOutOfStock}
+              whileTap={{ scale: 0.95 }}
             >
               Keranjang
-            </button>
-            <button
+            </motion.button>
+            <motion.button
               className="btn-checkout"
               onClick={handleCheckout}
               disabled={isOutOfStock}
+              whileTap={{ scale: 0.95 }}
             >
               Checkout
-            </button>
+            </motion.button>
           </div>
         </div>
-      </div>
+      </motion.div>
     </div>
   );
 }
