@@ -1,5 +1,5 @@
 // src/components/Navbar.jsx
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { BsLightning, BsPerson, BsBag, BsSearch } from "react-icons/bs";
 import { AiOutlineMenu, AiOutlineClose } from "react-icons/ai";
 import { useNavigate, useLocation, Link } from "react-router-dom";
@@ -15,6 +15,7 @@ const fallbackCategories = [
 export default function Navbar() {
   const navigate = useNavigate();
   const location = useLocation(); // 👈 detect current page
+  const navbarRef = useRef(null);
 
   const [userRole, setUserRole] = useState(localStorage.getItem("role") || null);
   const [cartCount, setCartCount] = useState(0);
@@ -38,6 +39,25 @@ export default function Navbar() {
     );
     return Object.values(merged).reduce((sum, item) => sum + item.qty, 0);
   };
+
+  // Function to close selected category and subcategory
+  const closeSelectedCategory = () => {
+    setSelectedCategory(null);
+    setSelectedSubcategory(null);
+  };
+
+  // Close the category dropdown when clicking outside
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (navbarRef.current && !navbarRef.current.contains(event.target)) {
+        closeSelectedCategory();
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
 
   const fetchCartCount = async () => {
     if (userRole !== "User") return;
@@ -172,7 +192,7 @@ useEffect(() => {
   const isHomePage = ["/", "/beranda"].includes(location.pathname);
 
   return (
-    <div className="w-100 sticky-top" style={{ zIndex: 1030 }}>
+    <div ref={navbarRef} className="w-100 sticky-top" style={{ zIndex: 1030 }}>
       {/* Top Navbar */}
       <div className="bg-primary text-white">
         <div className="container-fluid py-3 d-flex align-items-center position-relative">
