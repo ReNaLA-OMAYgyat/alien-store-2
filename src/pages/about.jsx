@@ -33,7 +33,7 @@ export default function AboutPage() {
             <div className="col-12 col-md-4">
               <div className="p-4 border rounded h-100 text-center">
                 <h5 className="fw-semibold">Terjangkau</h5>
-                <p className="mb-0">Harga kompetitif dengan promo menarik.</p>
+                <p className="mb-0">Harga kompetitif dengan promo menarik</p>
               </div>
             </div>
           </div>
