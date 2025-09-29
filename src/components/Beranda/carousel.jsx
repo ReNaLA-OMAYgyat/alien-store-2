@@ -1,9 +1,9 @@
 // HomeCarousel.jsx
 import React from "react";
 import { motion } from "framer-motion";
-import Images1 from "../assets/images/sepatu.jpg";
-import Images2 from "../assets/images/sembako.jpg";
-import Images3 from "../assets/images/snack.jpg";
+import Images1 from "../../assets/images/sepatu.jpg";
+import Images2 from "../../assets/images/sembako.jpg";
+import Images3 from "../../assets/images/snack.jpg";
 
 export default function HomeCarousel() {
   const slides = [
