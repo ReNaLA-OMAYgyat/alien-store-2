@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from "react";
 import api from "../api";
-import Sidebar from "../components/sidebar.jsx";
-import ProductModal from "../components/modalproduct.jsx";
-import DetailProductModal from "../components/modaleditproduk.jsx";
-import ModalShowDetail from "../components/modalshowproduk.jsx";
+import Sidebar from "../components/Admin/sidebar.jsx";
+import ProductModal from "../components/Admin/modalproduct.jsx";
+import DetailProductModal from "../components/Admin/modaleditproduk.jsx";
+import ModalShowDetail from "../components/Admin/modalshowproduk.jsx";
 
 
 export default function Product() {

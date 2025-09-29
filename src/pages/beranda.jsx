@@ -3,8 +3,8 @@ import React, { useEffect, useState, useCallback } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap/dist/js/bootstrap.bundle.min.js";
 import api from "../api";
-import ProductCard from "../components/card";
-import HomeCarousel from "../components/carousel";
+import ProductCard from "../components/Beranda/card";
+import HomeCarousel from "../components/Beranda/carousel";
 
 export default function Home() {
   const [products, setProducts] = useState([]); // displayed list

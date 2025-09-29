@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import api from "../api";
-import SubCategoryModal from "../components/subcategories.jsx";
-import Sidebar from "../components/sidebar.jsx";
+import SubCategoryModal from "../components/Admin/subcategories.jsx";
+import Sidebar from "../components/Admin/sidebar.jsx";
 
 export default function Dashboard() {
   const [categories, setCategories] = useState([]);

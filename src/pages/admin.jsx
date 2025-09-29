@@ -9,7 +9,7 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from "recharts";
-import Sidebar from "../components/sidebar";
+import Sidebar from "../components/Admin/sidebar";
 
 export default function AdminDashboard() {
   const stats = [
