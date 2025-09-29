@@ -195,164 +195,243 @@ useEffect(() => {
     <div ref={navbarRef} className="w-100 sticky-top" style={{ zIndex: 1030 }}>
       {/* Top Navbar */}
       <div className="bg-primary text-white">
-        <div className="container-fluid py-3 d-flex align-items-center position-relative">
-          {/* Left menu - mobile */}
-          <button
-            className="btn btn-link text-white p-0 me-2 d-inline d-md-none"
-            onClick={openSidebar}
-            aria-label="Open menu"
+        <div className="container-fluid py-3">
+          {/* Desktop Layout - Flexbox for better control */}
+          <div 
+            className="d-none d-md-flex"
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              minHeight: "48px"
+            }}
           >
-            <AiOutlineMenu size={24} />
-          </button>
-
-          {/* Branding (desktop only) */}
-          <div
-            className="d-none d-md-flex align-items-center me-2"
-            style={{ cursor: "pointer" }}
-            onClick={onHomeClick}
-          >
-            <div
-              className="bg-gradient rounded-circle d-flex align-items-center justify-content-center p-2 me-2"
-              style={{ background: "linear-gradient(to right, #a78bfa, #f9a8d4)" }}
-            >
-              <BsLightning className="text-white" />
-            </div>
-            <span className="fw-bold fs-4">Yofte.</span>
-          </div>
-
-          {/* Absolutely centered categories (desktop, home only) */}
-          {isHomePage && (
-            <div className="position-absolute start-50 translate-middle-x d-none d-md-flex align-items-center gap-3 flex-wrap">
-              {categories.map((cat) => (
-                <span
-                  key={cat.id}
-                  onClick={() => selectCategory(cat)}
-                  className="nav-link px-2 py-1"
-                  style={{
-                    cursor: "pointer",
-                    color:
-                      selectedCategory === cat.id
-                        ? "#fff"
-                        : "rgba(255,255,255,0.8)",
-                    borderBottom:
-                      selectedCategory === cat.id
-                        ? "2px solid #fff"
-                        : "2px solid transparent",
-                    fontWeight: selectedCategory === cat.id ? "600" : "400",
-                    transition: "all 0.2s",
-                  }}
+            {/* Left Section: Brand + Categories */}
+            <div style={{ 
+              display: "flex", 
+              alignItems: "center", 
+              gap: "1.5rem",
+              flexWrap: "nowrap"
+            }}>
+              {/* Branding */}
+              <div
+                className="d-flex align-items-center"
+                style={{ cursor: "pointer" }}
+                onClick={onHomeClick}
+              >
+                <div
+                  className="bg-gradient rounded-circle d-flex align-items-center justify-content-center p-2 me-2"
+                  style={{ background: "linear-gradient(to right, #a78bfa, #f9a8d4)" }}
                 >
-                  {cat.name}
-                </span>
-              ))}
-            </div>
-          )}
+                  <BsLightning className="text-white" />
+                </div>
+                <span className="fw-bold fs-4">Yofte.</span>
+              </div>
 
-          {/* Desktop search only */}
-          <div className="d-none d-md-flex align-items-center ms-auto" style={{ maxWidth: 360 }}>
-            <div className="input-group input-group-sm">
-              <span className="input-group-text bg-white">
-                <BsSearch size={14} />
-              </span>
-              <input
-                type="text"
-                className="form-control"
-                placeholder="Search products..."
-                value={searchQuery}
-                onChange={onSearchChange}
-              />
-            </div>
-          </div>
-
-          {/* Mobile main navbar content: Categories centered + Search; Home/Cart moved to sidebar */}
-          <div className="d-flex d-md-none align-items-center gap-2 flex-grow-1 ms-2">
-            {/* Categories (center) */}
-            {isHomePage && (
-              <div className="flex-grow-1 d-flex justify-content-center overflow-auto">
-                <div className="d-flex flex-nowrap as-cat-row px-2">
+              {/* Categories beside brand (home only) */}
+              {isHomePage && (
+                <div style={{ 
+                  display: "flex", 
+                  alignItems: "center", 
+                  gap: "1rem",
+                  flexWrap: "nowrap"
+                }}>
                   {categories.map((cat) => (
                     <span
                       key={cat.id}
                       onClick={() => selectCategory(cat)}
-                      className="px-2 py-1 rounded as-cat-chip"
+                      className="nav-link px-2 py-1"
                       style={{
                         cursor: "pointer",
                         color:
                           selectedCategory === cat.id
-                            ? "#ffffff"
-                            : "rgba(255,255,255,0.9)",
+                            ? "#fff"
+                            : "rgba(255,255,255,0.8)",
                         borderBottom:
                           selectedCategory === cat.id
-                            ? "2px solid #ffffff"
+                            ? "2px solid #fff"
                             : "2px solid transparent",
-                        fontWeight:
-                          selectedCategory === cat.id ? "700" : "500",
+                        fontWeight: selectedCategory === cat.id ? "600" : "400",
                         transition: "all 0.2s",
                         whiteSpace: "nowrap",
+                        flexShrink: 0
                       }}
                     >
                       {cat.name}
                     </span>
                   ))}
                 </div>
-              </div>
-            )}
-
-            {/* Search (mobile) */}
-            <button className="btn btn-link text-white p-0 ms-2" onClick={() => setShowMobileSearch(true)} aria-label="Open search">
-              <BsSearch size={20} />
-            </button>
-          </div>
-
-          {/* Cart & User (desktop only) */}
-          <div className="d-none d-md-flex align-items-center ms-3 gap-3">
-            {/* Cart */}
-            <div
-              className="position-relative"
-              style={{ cursor: "pointer" }}
-              onClick={handleCartClick}
-            >
-              <BsBag size={24} />
-              {cartCount > 0 && (
-                <span
-                  className="position-absolute top-0 start-100 translate-middle badge rounded-circle bg-light text-primary p-1"
-                  style={{ fontSize: "0.6rem" }}
-                >
-                  {displayCartCount}
-                </span>
               )}
             </div>
 
-            
+            {/* Right Section: Search + Cart + About + User - Positioned at far right */}
+            <div style={{ 
+              display: "flex", 
+              alignItems: "center", 
+              gap: "1.5rem"
+            }}>
+              {/* Search */}
+              <div style={{ maxWidth: "280px", width: "280px" }}>
+                <div className="input-group input-group-sm">
+                  <span className="input-group-text bg-white">
+                    <BsSearch size={14} />
+                  </span>
+                  <input
+                    type="text"
+                    className="form-control"
+                    placeholder="Search products..."
+                    value={searchQuery}
+                    onChange={onSearchChange}
+                  />
+                </div>
+              </div>
 
-            {/* User */}
-            {userRole ? (
-              <div className="d-flex align-items-center gap-2">
-                <BsPerson />
-                <span className="fw-semibold">{userRole}</span>
-                {userRole === "Admin" && (
-                  <button
-                    className="btn btn-sm btn-warning ms-2"
-                    onClick={() => navigate("/dashboard")}
+              {/* Cart */}
+              <div
+                className="position-relative"
+                style={{ cursor: "pointer" }}
+                onClick={handleCartClick}
+              >
+                <BsBag size={24} />
+                {cartCount > 0 && (
+                  <span
+                    className="position-absolute top-0 start-100 translate-middle badge rounded-circle bg-light text-primary p-1"
+                    style={{ fontSize: "0.6rem" }}
                   >
-                    Dashboard
-                  </button>
+                    {displayCartCount}
+                  </span>
                 )}
-                <button
-                  className="btn btn-sm btn-light ms-2"
-                  onClick={handleLogoutClick}
-                >
-                  Logout
-                </button>
               </div>
-            ) : (
-              <div className="d-flex align-items-center gap-1">
-                <BsPerson />
-                <Link to="/login" className="text-white text-decoration-none">
-                  Sign In
-                </Link>
-              </div>
-            )}
+
+              {/* About Button - Logo only */}
+              <Link 
+                to="/about" 
+                className="text-white text-decoration-none d-flex align-items-center"
+                style={{ cursor: "pointer" }}
+                title="About"
+              >
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/>
+                </svg>
+              </Link>
+
+              {/* User */}
+              {userRole ? (
+                <div className="d-flex align-items-center gap-2">
+                  <BsPerson />
+                  <span className="fw-semibold">{userRole}</span>
+                  {userRole === "Admin" && (
+                    <button
+                      className="btn btn-sm btn-warning ms-2"
+                      onClick={() => navigate("/dashboard")}
+                    >
+                      Dashboard
+                    </button>
+                  )}
+                  <button
+                    className="btn btn-sm btn-light ms-2"
+                    onClick={handleLogoutClick}
+                  >
+                    Logout
+                  </button>
+                </div>
+              ) : (
+                <div className="d-flex align-items-center gap-1">
+                  <BsPerson />
+                  <Link to="/login" className="text-white text-decoration-none">
+                    Sign In
+                  </Link>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Mobile Layout - Flexbox for better mobile UX */}
+          <div 
+            className="d-flex d-md-none"
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              gap: "1rem",
+              minHeight: "48px"
+            }}
+          >
+            {/* Left: Mobile Menu */}
+            <button
+              className="btn btn-link text-white p-0"
+              onClick={openSidebar}
+              aria-label="Open menu"
+              style={{ flexShrink: 0 }}
+            >
+              <AiOutlineMenu size={24} />
+            </button>
+
+            {/* Center: Brand + Categories */}
+            <div style={{ 
+              display: "flex", 
+              alignItems: "center", 
+              gap: "0.5rem",
+              flex: 1,
+              justifyContent: "center",
+              overflow: "hidden"
+            }}>
+
+              {/* Categories (mobile) */}
+              {isHomePage && (
+                <div style={{ 
+                  display: "flex", 
+                  alignItems: "center", 
+                  gap: "0.5rem",
+                  overflowX: "auto",
+                  flex: 1,
+                  justifyContent: "center"
+                }}>
+                  <div style={{ 
+                    display: "flex", 
+                    gap: "0.5rem",
+                    padding: "0 0.5rem"
+                  }}>
+                    {categories.map((cat) => (
+                      <span
+                        key={cat.id}
+                        onClick={() => selectCategory(cat)}
+                        className="px-2 py-1 rounded"
+                        style={{
+                          cursor: "pointer",
+                          color:
+                            selectedCategory === cat.id
+                              ? "#ffffff"
+                              : "rgba(255,255,255,0.9)",
+                          borderBottom:
+                            selectedCategory === cat.id
+                              ? "2px solid #ffffff"
+                              : "2px solid transparent",
+                          fontWeight:
+                            selectedCategory === cat.id ? "700" : "500",
+                          transition: "all 0.2s",
+                          whiteSpace: "nowrap",
+                          flexShrink: 0,
+                          fontSize: "0.9rem"
+                        }}
+                      >
+                        {cat.name}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Right: Search */}
+            <button 
+              className="btn btn-link text-white p-0"
+              onClick={() => setShowMobileSearch(true)} 
+              aria-label="Open search"
+              style={{ flexShrink: 0 }}
+            >
+              <BsSearch size={20} />
+            </button>
           </div>
         </div>
       </div>
@@ -361,47 +440,118 @@ useEffect(() => {
       {/* ✅ Subcategories only on Home page */}
       {isHomePage && selectedCategory && (
         <div className="bg-light py-2 border-bottom">
-          <div className="container-fluid d-flex justify-content-center flex-wrap gap-3">
-            {subLoading ? (
-              Array.from({ length: 4 }).map((_, i) => (
-                <span
-                  key={i}
-                  className="placeholder-glow bg-secondary rounded"
-                  style={{
-                    width: "80px",
-                    height: "16px",
-                    display: "inline-block",
-                    opacity: 0.5,
-                  }}
-                ></span>
-              ))
-            ) : (
-              subcategories
-                .filter((s) => s.category_id === selectedCategory)
-                .map((sub) => (
+          <div className="container-fluid">
+            {/* Desktop: Grid for responsive layout */}
+            <div 
+              className="d-none d-md-flex"
+              style={{
+                display: "grid",
+                gridTemplateColumns: "repeat(auto-fit, minmax(120px, max-content))",
+                justifyContent: "center",
+                gap: "1rem"
+              }}
+            >
+              {subLoading ? (
+                Array.from({ length: 4 }).map((_, i) => (
                   <span
-                    key={sub.id}
-                    onClick={() => selectSubcategory(sub)}
+                    key={i}
+                    className="placeholder-glow bg-secondary rounded"
                     style={{
-                      cursor: "pointer",
-                      color:
-                        selectedSubcategory === sub.id
-                          ? "#0d6efd"
-                          : "rgba(0,0,0,0.6)",
-                      borderBottom:
-                        selectedSubcategory === sub.id
-                          ? "2px solid #0d6efd"
-                          : "2px solid transparent",
-                      fontWeight:
-                        selectedSubcategory === sub.id ? "600" : "400",
-                      padding: "2px 4px",
-                      transition: "all 0.2s",
+                      width: "100px",
+                      height: "20px",
+                      display: "inline-block",
+                      opacity: 0.5,
                     }}
-                  >
-                    {sub.name}
-                  </span>
+                  ></span>
                 ))
-            )}
+              ) : (
+                subcategories
+                  .filter((s) => s.category_id === selectedCategory)
+                  .map((sub) => (
+                    <span
+                      key={sub.id}
+                      onClick={() => selectSubcategory(sub)}
+                      style={{
+                        cursor: "pointer",
+                        color:
+                          selectedSubcategory === sub.id
+                            ? "#0d6efd"
+                            : "rgba(0,0,0,0.6)",
+                        borderBottom:
+                          selectedSubcategory === sub.id
+                            ? "2px solid #0d6efd"
+                            : "2px solid transparent",
+                        fontWeight:
+                          selectedSubcategory === sub.id ? "600" : "400",
+                        padding: "4px 8px",
+                        transition: "all 0.2s",
+                        textAlign: "center",
+                        borderRadius: "4px",
+                        backgroundColor: selectedSubcategory === sub.id ? "rgba(13, 110, 253, 0.1)" : "transparent"
+                      }}
+                    >
+                      {sub.name}
+                    </span>
+                  ))
+              )}
+            </div>
+
+            {/* Mobile: Flexbox for horizontal scrolling */}
+            <div 
+              className="d-flex d-md-none"
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "0.75rem",
+                overflowX: "auto",
+                padding: "0 0.5rem"
+              }}
+            >
+              {subLoading ? (
+                Array.from({ length: 4 }).map((_, i) => (
+                  <span
+                    key={i}
+                    className="placeholder-glow bg-secondary rounded"
+                    style={{
+                      width: "80px",
+                      height: "16px",
+                      display: "inline-block",
+                      opacity: 0.5,
+                      flexShrink: 0
+                    }}
+                  ></span>
+                ))
+              ) : (
+                subcategories
+                  .filter((s) => s.category_id === selectedCategory)
+                  .map((sub) => (
+                    <span
+                      key={sub.id}
+                      onClick={() => selectSubcategory(sub)}
+                      style={{
+                        cursor: "pointer",
+                        color:
+                          selectedSubcategory === sub.id
+                            ? "#0d6efd"
+                            : "rgba(0,0,0,0.6)",
+                        borderBottom:
+                          selectedSubcategory === sub.id
+                            ? "2px solid #0d6efd"
+                            : "2px solid transparent",
+                        fontWeight:
+                          selectedSubcategory === sub.id ? "600" : "400",
+                        padding: "4px 8px",
+                        transition: "all 0.2s",
+                        whiteSpace: "nowrap",
+                        flexShrink: 0,
+                        fontSize: "0.9rem"
+                      }}
+                    >
+                      {sub.name}
+                    </span>
+                  ))
+              )}
+            </div>
           </div>
         </div>
       )}
@@ -431,50 +581,108 @@ useEffect(() => {
             <AiOutlineClose size={24} />
           </button>
         </div>
-        <div className="as-offcanvas-body p-3 d-flex flex-column gap-3">
-          {/* User status */}
-          {userRole ? (
-            <div className="d-flex align-items-center justify-content-between">
-              <div className="d-flex align-items-center gap-2">
-                <BsPerson />
-                <span className="fw-semibold">Status: {userRole}</span>
-              </div>
-              <div className="d-flex gap-2">
-                {userRole === "Admin" && (
-                  <button className="btn btn-warning btn-sm" onClick={() => { navigate("/dashboard"); closeSidebar(); }}>
-                    Dashboard
+        <div 
+          className="as-offcanvas-body p-3"
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            gap: "1.5rem",
+            height: "100%"
+          }}
+        >
+          {/* User status - Grid for better control */}
+          <div style={{
+            display: "grid",
+            gridTemplateColumns: "1fr auto",
+            alignItems: "center",
+            gap: "1rem",
+            padding: "1rem",
+            backgroundColor: "rgba(0,0,0,0.05)",
+            borderRadius: "8px"
+          }}>
+            {userRole ? (
+              <>
+                <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
+                  <BsPerson size={20} />
+                  <div>
+                    <div className="fw-semibold">Status: {userRole}</div>
+                    <small className="text-muted">Logged in</small>
+                  </div>
+                </div>
+                <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
+                  {userRole === "Admin" && (
+                    <button className="btn btn-warning btn-sm" onClick={() => { navigate("/dashboard"); closeSidebar(); }}>
+                      Dashboard
+                    </button>
+                  )}
+                  <button className="btn btn-outline-danger btn-sm" onClick={handleLogoutClick}>
+                    Logout
                   </button>
-                )}
-                <button className="btn btn-outline-danger btn-sm" onClick={handleLogoutClick}>
-                  Logout
-                </button>
-              </div>
-            </div>
-          ) : (
-            <div className="d-flex align-items-center justify-content-between">
-              <div className="d-flex align-items-center gap-2">
-                <BsPerson />
-                <span className="fw-semibold">Guest</span>
-              </div>
-              <Link to="/login" className="btn btn-primary btn-sm" onClick={closeSidebar}>
-                Sign In
-              </Link>
-            </div>
-          )}
+                </div>
+              </>
+            ) : (
+              <>
+                <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
+                  <BsPerson size={20} />
+                  <div>
+                    <div className="fw-semibold">Guest User</div>
+                    <small className="text-muted">Not logged in</small>
+                  </div>
+                </div>
+                <Link to="/login" className="btn btn-primary btn-sm" onClick={closeSidebar}>
+                  Sign In
+                </Link>
+              </>
+            )}
+          </div>
 
-          {/* Links */}
-          <div className="list-group">
-            <button className="list-group-item list-group-item-action d-flex align-items-center justify-content-between" onClick={onHomeClick}>
-              <span><i className="bi bi-house me-2"></i> Home</span>
+          {/* Navigation Links - Flexbox for better mobile experience */}
+          <div style={{ 
+            display: "flex", 
+            flexDirection: "column", 
+            gap: "0.75rem",
+            flex: 1
+          }}>
+            <button 
+              className="btn btn-outline-primary d-flex align-items-center justify-content-between p-3"
+              onClick={onHomeClick}
+              style={{ borderRadius: "8px", border: "1px solid #dee2e6" }}
+            >
+              <span style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
+                <i className="bi bi-house"></i>
+                <span className="fw-medium">Home</span>
+              </span>
+              <i className="bi bi-chevron-right text-muted"></i>
             </button>
-            <Link to="/about" className="list-group-item list-group-item-action" onClick={closeSidebar}>
-              <span><i className="bi bi-info-circle me-2"></i> About</span>
+            
+            <Link 
+              to="/about" 
+              className="btn btn-outline-secondary d-flex align-items-center justify-content-between p-3 text-decoration-none"
+              onClick={closeSidebar}
+              style={{ borderRadius: "8px", border: "1px solid #dee2e6" }}
+            >
+              <span style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
+                <i className="bi bi-info-circle"></i>
+                <span className="fw-medium">About</span>
+              </span>
+              <i className="bi bi-chevron-right text-muted"></i>
             </Link>
-            <button className="list-group-item list-group-item-action d-flex align-items-center justify-content-between" onClick={() => { closeSidebar(); handleCartClick(); }}>
-              <span><i className="bi bi-bag me-2"></i> Cart</span>
-              {cartCount > 0 && (
-                <span className="badge bg-primary rounded-pill">{displayCartCount}</span>
-              )}
+            
+            <button 
+              className="btn btn-outline-success d-flex align-items-center justify-content-between p-3"
+              onClick={() => { closeSidebar(); handleCartClick(); }}
+              style={{ borderRadius: "8px", border: "1px solid #dee2e6" }}
+            >
+              <span style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
+                <i className="bi bi-bag"></i>
+                <span className="fw-medium">Cart</span>
+              </span>
+              <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                {cartCount > 0 && (
+                  <span className="badge bg-primary rounded-pill">{displayCartCount}</span>
+                )}
+                <i className="bi bi-chevron-right text-muted"></i>
+              </div>
             </button>
           </div>
 
