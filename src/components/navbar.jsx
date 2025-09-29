@@ -354,7 +354,7 @@ useEffect(() => {
               alignItems: "center",
               justifyContent: "space-between",
               gap: "1rem",
-              minHeight: "48px"
+              minHeight: "34px"
             }}
           >
             {/* Left: Mobile Menu */}
