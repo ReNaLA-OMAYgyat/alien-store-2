@@ -56,7 +56,10 @@ export default function ProductModal({ show, onClose, onSaved, product, subcateg
     e.preventDefault();
 
     const formData = new FormData();
-    Object.keys(form).forEach((key) => {
+    // When editing, only include editable fields
+    const editableFields = product ? ['nama', 'merk', 'harga', 'stok'] : Object.keys(form);
+    
+    editableFields.forEach((key) => {
       if (form[key] !== null && form[key] !== "") {
         formData.append(key, form[key]);
       }
@@ -83,16 +86,7 @@ export default function ProductModal({ show, onClose, onSaved, product, subcateg
     }
   };
 
-  if (!show) return null;
 
-  // Buat preview gambar saat edit
-  const image =
-    product && product.image
-      ? `${import.meta.env.VITE_API_BASE_URL.replace(
-          "/api",
-          ""
-        )}/storage/${product.image}`
-      : null;
 
   return (
     <div className="modal show d-block" tabIndex="-1">
@@ -162,44 +156,46 @@ export default function ProductModal({ show, onClose, onSaved, product, subcateg
 
                 <div className="col-md-6">
                   <label className="form-label">Subkategori</label>
-                <select
-  name="subcategory_id"
-  className="form-select"
-  value={form.subcategory_id}
-  onChange={handleChange}
-  required
->
-  <option value="">Pilih Subkategori</option>
-  {subcategories.map((s) => (
-    <option key={s.id} value={s.id}>
-      {s.name}
-    </option>
-  ))}
-</select>
-
+                  {product ? (
+                    <input
+                      type="text"
+                      className="form-control"
+                      value={subcategories.find(s => s.id === form.subcategory_id)?.name || ''}
+                      disabled
+                    />
+                  ) : (
+                    <select
+                      name="subcategory_id"
+                      className="form-select"
+                      value={form.subcategory_id}
+                      onChange={handleChange}
+                      required
+                    >
+                      <option value="">Pilih Subkategori</option>
+                      {subcategories.map((s) => (
+                        <option key={s.id} value={s.id}>
+                          {s.name}
+                        </option>
+                      ))}
+                    </select>
+                  )}
                 </div>
 
                 <div className="col-md-6">
                   <label className="form-label">Gambar Produk</label>
-                  <input
-                    type="file"
-                    className="form-control"
-                    onChange={handleFileChange}
-                  />
-                  {image && (
-                    <div className="mt-2">
-                      <img
-                        src={image}
-                        alt="preview"
-                        style={{
-                          width: "100px",
-                          height: "100px",
-                          objectFit: "cover",
-                        }}
-                        className="rounded shadow-sm"
-                      />
+                  {product ? (
+                    <div className="form-control-plaintext">
+                      <small className="text-muted">Gambar tidak dapat diubah saat mengedit</small>
                     </div>
+                  ) : (
+                    <input
+                      type="file"
+                      className="form-control"
+                      onChange={handleFileChange}
+                      required
+                    />
                   )}
+                 
                 </div>
               </div>
             </div>

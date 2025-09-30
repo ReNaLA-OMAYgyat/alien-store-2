@@ -37,12 +37,41 @@ export default function DetailProductModal({ show, onClose, onSaved, productDeta
  const handleSubmit = async (e) => {
   e.preventDefault();
   try {
-    const payload = [from];
-    console.log("Payload dikirim:", payload);
+    // Validasi form terlebih dahulu
+    if (!form.product_id || !form.warna || !form.ukuran) {
+      alert("Mohon isi semua field yang wajib diisi (Produk, Warna, dan Ukuran)");
+      return;
+    }
+
+    // Siapkan data yang akan dikirim
+    let payload;
+    
+    if (productDetail) {
+      // Format untuk edit (PUT)
+      payload = {
+        _method: 'PUT',
+        product_id: form.product_id,
+        warna: form.warna,
+        ukuran: form.ukuran,
+        bahan: form.bahan || ""
+      };
+    } else {
+      // Format untuk create (POST)
+      payload = {
+        product_id: form.product_id,
+        warna: form.warna,
+        ukuran: form.ukuran,
+        bahan: form.bahan || ""
+      };
+    }
+
+    console.log("Data yang akan dikirim:", payload);
 
     if (productDetail) {
-      await api.put(`/products-detail/${productDetail.id}`, payload);
+      // Untuk edit, gunakan POST dengan _method: PUT
+      await api.post(`/products-detail/${productDetail.id}`, payload);
     } else {
+      // Untuk create baru
       await api.post("/products-detail", payload);
     }
 
@@ -50,7 +79,7 @@ export default function DetailProductModal({ show, onClose, onSaved, productDeta
     onSaved();   // refresh data list
     onClose();   // tutup modal
   } catch (err) {
-    console.error("Error saving detail product:", err.response?.data || err);
+   
     alert("Gagal menyimpan detail produk ❌");
   }
 };
@@ -106,6 +135,7 @@ export default function DetailProductModal({ show, onClose, onSaved, productDeta
                   className="form-control"
                   value={form.bahan}
                   onChange={handleChange}
+                  placeholder="Opsional"
                 />
               </div>
 

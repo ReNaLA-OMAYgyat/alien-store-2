@@ -20,10 +20,11 @@ api.interceptors.request.use((config) => {
 });
 
 export const getCategories = async () => {
-  return await axios.get(`${API_URL}/categories`);
+  return await api.get("/categories");
 };
 
 export const getSubcategories = async () => {
-  return await axios.get(`${API_URL}/subcategories`);
+  return await api.get("/subcategories");
 };
+
 export default api;
