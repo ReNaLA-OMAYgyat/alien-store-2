@@ -8,7 +8,7 @@ export default function PrivateRouteAdmin({ children }) {
   if (!token || role !== "Admin") {
     return <Navigate to="/beranda" replace />;
   }
-
+  
   // Kalau admin, render halaman yang diminta
   return children;
 }

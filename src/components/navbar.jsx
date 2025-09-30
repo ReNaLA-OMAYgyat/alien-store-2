@@ -271,6 +271,7 @@ useEffect(() => {
               gap: "1.5rem"
             }}>
               {/* Search */}
+              {isHomePage ? (
               <div style={{ maxWidth: "280px", width: "280px" }}>
                 <div className="input-group input-group-sm">
                   <span className="input-group-text bg-white">
@@ -285,6 +286,7 @@ useEffect(() => {
                   />
                 </div>
               </div>
+              ) : ([])}
 
               {/* Cart */}
               <div
@@ -605,7 +607,7 @@ useEffect(() => {
                 <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
                   <BsPerson size={20} />
                   <div>
-                    <div className="fw-semibold">Status: {userRole}</div>
+                    <div className="fw-semibold">{userRole}</div>
                     <small className="text-muted">Logged in</small>
                   </div>
                 </div>
