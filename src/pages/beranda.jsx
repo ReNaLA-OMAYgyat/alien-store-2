@@ -5,6 +5,7 @@ import "bootstrap/dist/js/bootstrap.bundle.min.js";
 import api from "../api";
 import ProductCard from "../components/Beranda/card";
 import HomeCarousel from "../components/Beranda/carousel";
+import Footer from "../components/Beranda/footer"; // 
 
 export default function Home() {
   const [products, setProducts] = useState([]); // displayed list
@@ -67,7 +68,9 @@ export default function Home() {
   }, [applyFilters]);
 
   const handleAddToCart = (product) => {
-    window.dispatchEvent(new CustomEvent("cartUpdated", { detail: { increment: 1 } }));
+    window.dispatchEvent(
+      new CustomEvent("cartUpdated", { detail: { increment: 1 } })
+    );
     console.log("Tambah ke keranjang:", product);
   };
 
@@ -127,6 +130,9 @@ export default function Home() {
           )}
         </div>
       </div>
+
+      
+      <Footer />
     </>
   );
 }
