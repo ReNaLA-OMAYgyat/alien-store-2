@@ -15,9 +15,9 @@ export default function Footer() {
         <div className="row">
           {/* Logo + Deskripsi */}
           <div className="col-md-3 mb-4">
-            <h4 className="fw-bold">ShopX</h4>
+            <h4 className="fw-bold">AlienStore</h4>
             <p className="small">
-              Belanja mudah dan aman bersama ShopX. Produk original & harga
+              Belanja mudah dan aman bersama AlienSore. Produk original & harga
               terbaik untuk kebutuhan Anda.
             </p>
           </div>
@@ -27,11 +27,8 @@ export default function Footer() {
             <h6 className="fw-bold">Quick Links</h6>
             <ul className="list-unstyled small">
               <li><a href="/" className="text-decoration-none text-light">Home</a></li>
-              <li><a href="/orders" className="text-decoration-none text-light">Orders</a></li>
-              <li><a href="/customers" className="text-decoration-none text-light">Customers</a></li>
-              <li><a href="/reports" className="text-decoration-none text-light">Reports</a></li>
-              <li><a href="/contact" className="text-decoration-none text-light">Contact</a></li>
-            </ul>
+              <li><a href="/cart" className="text-decoration-none text-light">Carts</a></li>
+             </ul>
           </div>
 
           {/* Customer Service */}

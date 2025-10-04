@@ -5,7 +5,7 @@ import "bootstrap/dist/js/bootstrap.bundle.min.js";
 import api from "../api";
 import ProductCard from "../components/Beranda/card";
 import HomeCarousel from "../components/Beranda/carousel";
-import Footer from "../components/Beranda/footer"; // 
+import Footer from "../components/footer"; // 
 
 export default function Home() {
   const [products, setProducts] = useState([]); // displayed list
