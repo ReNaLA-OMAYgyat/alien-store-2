@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from "react";
 import api from "../api";
-import SubCategoryModal from "../components/subcategories.jsx";
-import Sidebar from "../components/sidebar.jsx";
+import SubCategoryModal from "../components/Admin/subcategories.jsx";
+import Sidebar from "../components/Admin/sidebar.jsx";
+import "../pages/layoutadmin.css";
 
 export default function Dashboard() {
   const [categories, setCategories] = useState([]);
@@ -195,7 +196,7 @@ export default function Dashboard() {
   };
 
   return (
-    <div className="d-flex vh-100">
+    <div className="d-flex vh-100 page-content">
       {/* Sidebar */}
       <Sidebar />
       {/* Main Content */}
