@@ -261,7 +261,9 @@ useEffect(() => {
                     </span>
                   ))}
                 </div>
-              )}
+              )
+              
+              }
             </div>
 
             {/* Right Section: Search + Cart + About + User - Positioned at far right */}
@@ -394,28 +396,26 @@ useEffect(() => {
                     gap: "0.5rem",
                     padding: "0 0.5rem"
                   }}>
-                    {categories.map((cat) => (
-                      <span
-                        key={cat.id}
-                        onClick={() => selectCategory(cat)}
-                        className="px-2 py-1 rounded"
-                        style={{
-                          cursor: "pointer",
-                          color:
-                            selectedCategory === cat.id
-                              ? "#ffffff"
-                              : "rgba(255,255,255,0.9)",
-                          borderBottom:
-                            selectedCategory === cat.id
-                              ? "2px solid #ffffff"
-                              : "2px solid transparent",
-                          fontWeight:
-                            selectedCategory === cat.id ? "700" : "500",
-                          transition: "all 0.2s",
-                          whiteSpace: "nowrap",
-                          flexShrink: 0,
-                          fontSize: "0.9rem"
-                        }}
+                  {categories.map((cat) => (
+                    <span
+                      key={cat.id}
+                      onClick={() => selectCategory(cat)}
+                      className="nav-link px-2 py-1"
+                      style={{
+                        cursor: "pointer",
+                        color:
+                          selectedCategory === cat.id
+                            ? "#fff"
+                            : "rgba(255,255,255,0.8)",
+                        borderBottom:
+                          selectedCategory === cat.id
+                            ? "2px solid #fff"
+                            : "2px solid transparent",
+                        fontWeight: selectedCategory === cat.id ? "600" : "400",
+                        transition: "all 0.2s",
+                        whiteSpace: "nowrap",
+                        flexShrink: 0
+                      }}
                       >
                         {cat.name}
                       </span>
@@ -488,8 +488,6 @@ useEffect(() => {
                         padding: "4px 8px",
                         transition: "all 0.2s",
                         textAlign: "center",
-                        borderRadius: "4px",
-                        backgroundColor: selectedSubcategory === sub.id ? "rgba(13, 110, 253, 0.1)" : "transparent"
                       }}
                     >
                       {sub.name}
