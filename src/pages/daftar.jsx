@@ -33,6 +33,16 @@ export default function Daftar() {
       alert("Daftar berhasil!");
       navigate("/login");
     } catch (err) {
+      // jika tidak ada response, kemungkinan tidak bisa terhubung ke backend
+      console.error("Register error:", err);
+      if (!err.response) {
+        const backendHint = import.meta.env.VITE_API_BASE_URL || "http://alienstore.test/api";
+        alert(
+          `Tidak dapat terhubung ke server. Pastikan backend berjalan di ${backendHint} (cek .env dan jalankan backend).`
+        );
+        return;
+      }
+
       if (err.response?.status === 422) {
         setErrors(err.response.data.errors); // tangkap error validasi Laravel
       } else {

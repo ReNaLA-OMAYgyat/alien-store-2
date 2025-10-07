@@ -1,28 +1,69 @@
 import React, { useEffect, useState } from "react";
 import api from "../../api";
 
-export default function ModalShowDetail({ show, onClose, productId }) {
+export default function ModalShowDetail({ show, onClose, productId, productDetail }) {
   const [detail, setDetail] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState(null);
 
-  // Fetch detail product ketika modal terbuka
+  // If parent already provided detail data, use it. Otherwise fetch.
   useEffect(() => {
-    if (show && productId) {
-      setLoading(true);
-      api
-        .get(`/products-detail/${productId}`)
-        .then((res) => {
-          setDetail(res.data);
-        })
-        .catch((err) => {
-          console.error("Error fetching product detail:", err);
-          setDetail([]);
-        })
-        .finally(() => setLoading(false));
-    }
-  }, [show, productId]);
+    let mounted = true;
+    async function load() {
+      setErrorMessage(null);
+      if (!show) return;
 
-  if (!show) return null;
+      if (productDetail) {
+        // parent provided data (could be array or single object)
+        if (mounted) {
+          setDetail(Array.isArray(productDetail) ? productDetail : [productDetail]);
+        }
+        return;
+      }
+
+      if (!productId) {
+        if (mounted) setDetail([]);
+        return;
+      }
+
+      setLoading(true);
+    try {
+  const url = `/products-detail`;
+  console.debug(`Fetching all product details from ${url}`);
+  const res = await api.get(url);
+
+  let data = res.data;
+
+  // cari produk sesuai productId
+  const product = data.find((p) => p.id === productId);
+
+  // ambil details-nya
+  const details = product?.details || [];
+
+  if (mounted) setDetail(details);
+} catch (err) {
+  console.error("Error fetching product detail:", err);
+  let msg = "Gagal memuat detail produk.";
+  if (err.response) {
+    msg += ` Server mengembalikan status ${err.response.status}.`;
+  } else if (err.request) {
+    msg += " Tidak ada respons dari server (cek koneksi / CORS / base URL).";
+  }
+  if (mounted) {
+    setErrorMessage(msg);
+    setDetail([]);
+  }
+      } finally {
+        if (mounted) setLoading(false);
+      }
+
+    }
+
+    load();
+    return () => {
+      mounted = false;
+    };
+  }, [show, productId, productDetail]);
 
   return (
     <div className="modal show d-block" tabIndex="-1">
@@ -40,6 +81,8 @@ export default function ModalShowDetail({ show, onClose, productId }) {
           <div className="modal-body">
             {loading ? (
               <p>Loading...</p>
+            ) : errorMessage ? (
+              <div className="alert alert-warning">{errorMessage}</div>
             ) : detail && detail.length > 0 ? (
               <table className="table table-bordered">
                 <thead>
@@ -51,7 +94,7 @@ export default function ModalShowDetail({ show, onClose, productId }) {
                 </thead>
                 <tbody>
                   {detail.map((d) => (
-                    <tr key={d.id}>
+                    <tr key={d.id || `${d.warna}-${d.ukuran}`}>
                       <td>{d.warna}</td>
                       <td>{d.ukuran}</td>
                       <td>{d.bahan ?? "-"}</td>

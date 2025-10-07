@@ -24,7 +24,9 @@ export default function Product() {
   // Modal & selected product
   const [showModal, setShowModal] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState(null);
-  const [showDetailModal, setShowDetailModal] = useState(false);
+  // Separate states: one for the detail create/edit form, one for the "show/detail view"
+  const [showDetailForm, setShowDetailForm] = useState(false);
+  const [showShowDetailModal, setShowShowDetailModal] = useState(false);
 
   // Delete
   const [productToDelete, setProductToDelete] = useState(null);
@@ -152,35 +154,7 @@ export default function Product() {
     }
   };
 
-  // Export CSV
-  const exportCsv = () => {
-    const rows = [
-      ["ID", "Nama", "Merk", "Harga", "Stok", "Subkategori"],
-      ...sortedProducts.map((p) => [
-        p.id,
-        p.nama,
-        p.merk,
-        p.harga,
-        p.stok,
-        getSubcategoryName(p.subcategory_id),
-      ]),
-    ];
-    const csv = rows
-      .map((r) =>
-        r.map((c) => `"${String(c ?? "").replaceAll('"', '""')}"`).join(",")
-      )
-      .join("\n");
-    const blob = new Blob(["\ufeff" + csv], {
-      type: "text/csv;charset=utf-8;",
-    });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = "products.csv";
-    a.click();
-    URL.revokeObjectURL(url);
-  };
-
+  
   return (
     <div className="d-flex vh-100 page-content">
       <Sidebar />
@@ -197,12 +171,6 @@ export default function Product() {
               }}
             >
               + Tambah Produk
-            </button>
-            <button
-              className="btn btn-outline-secondary"
-              onClick={exportCsv}
-            >
-              <i className="bi bi-download"></i> Export CSV
             </button>
           </div>
 
@@ -331,20 +299,29 @@ export default function Product() {
                           </button>
                           <button
                             className="btn btn-outline-info"
-                            onClick={() => { setSelectedProduct(p); setShowDetailModal(true); }}
+                            title="Lihat detail"
+                            onClick={() => {
+                              console.debug("Lihat detail clicked", { product: p, productDetail: p.detail, productId: p.id });
+                              setSelectedProduct(p);
+                              setProductDetail(p.detail || null);
+                              setShowShowDetailModal(true);
+                            }}
                           >
                             <i className="bi bi-card-list"></i>
                           </button>
-                         <button
-  className="btn btn-outline-info"
-  onClick={() => {
-    setSelectedProduct(p); // simpan produk yang dipilih
-    setProductDetail(p.detail || null); // ambil detail produk
-    setShowDetailModal(true); // tampilkan modal show
-  }}
->
-  <i className="bi bi-card-list"></i>
-</button>
+
+                          <button
+                            className="btn btn-outline-secondary"
+                            title="Tambah / Edit detail"
+                            onClick={() => {
+                              console.debug("Tambah/Edit detail clicked", { product: p, productDetail: p.detail, productId: p.id });
+                              setSelectedProduct(p);
+                              setProductDetail(p.detail || null);
+                              setShowDetailForm(true);
+                            }}
+                          >
+                            <i className="bi bi-plus-square"></i>
+                          </button>
 
 
 
@@ -409,25 +386,28 @@ export default function Product() {
         />
       )}
 
-      {/* Modal Detail */}
-      {showDetailModal && (
+      {/* Detail create/edit form modal */}
+      {showDetailForm && (
         <DetailProductModal
-          show={showDetailModal}
-          onClose={() => setShowDetailModal(false)}
-          onSaved={fetchProducts}
-          productDetail={null}
+          show={showDetailForm}
+          onClose={() => setShowDetailForm(false)}
+          onSaved={() => {
+            setShowDetailForm(false);
+            fetchProducts();
+          }}
+          productDetail={productDetail}
           products={products}
         />
       )}
 
-      {/* Modal Detail */}
-{showDetailModal && (
-  <ModalShowDetail
-    show={showDetailModal}
-    onClose={() => setShowDetailModal(false)}
-    productDetail={productDetail} // hanya show, tidak CRUD
-  />
-)}
+      {/* Detail view modal (read-only) */}
+      {showShowDetailModal && (
+        <ModalShowDetail
+          show={showShowDetailModal}
+          onClose={() => setShowShowDetailModal(false)}
+          productId={selectedProduct?.id}
+        />
+      )}
 
 
       {/* Delete Confirmation */}

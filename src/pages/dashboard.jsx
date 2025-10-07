@@ -152,30 +152,7 @@ export default function Dashboard() {
     );
   };
 
-  const exportCsv = () => {
-    const rows = [
-      ["ID", "Nama", "Kategori"],
-      ...sortedSubcategories.map((s) => [
-        s.id,
-        s.name,
-        getCategoryName(s.category_id),
-      ]),
-    ];
-    const csv = rows
-      .map((r) =>
-        r.map((c) => `"${String(c ?? "").replaceAll('"', '""')}"`).join(",")
-      )
-      .join("\n");
-    const blob = new Blob(["\ufeff" + csv], {
-      type: "text/csv;charset=utf-8;",
-    });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = "subcategories.csv";
-    a.click();
-    URL.revokeObjectURL(url);
-  };
+ 
 
   const requestDeleteSubcategory = async () => {
     if (!subToDelete) return;
@@ -228,13 +205,7 @@ export default function Dashboard() {
                   <i className="bi bi-plus-lg"></i>
                   Tambah
                 </button>
-                <button
-                  className="btn btn-outline-secondary d-flex align-items-center gap-2"
-                  onClick={exportCsv}
-                >
-                  <i className="bi bi-download"></i>
-                  Export CSV
-                </button>
+               
               </div>
             </div>
 
