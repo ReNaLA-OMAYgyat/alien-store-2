@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import Sidebar from "../components/Admin/sidebar";
+import api from "../api";
 import { Modal, Button } from "react-bootstrap";
 import "../pages/layoutadmin.css";
 
@@ -8,20 +9,80 @@ export default function Orders() {
   const [filter, setFilter] = useState("All");
   const [search, setSearch] = useState("");
   const [selectedOrder, setSelectedOrder] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
 
-  // ✅ Ambil data transaksi dari localStorage
-  useEffect(() => {
-    const saved = JSON.parse(localStorage.getItem("transaksiData") || "[]");
-    setOrders(saved);
-  }, []);
+  // Ambil data dari API /transaksi-admin (index pada apiResource)
+ useEffect(() => {
+  let mounted = true;
 
-  // 🔍 Filter + Search
+  const load = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await api.get("/transaksi-admin");
+
+      console.log("Response full dari API:", res);
+      console.log("Isi lengkap res.data:", JSON.stringify(res.data, null, 2));
+
+      // 💡 Ambil data dari object (bisa dari key data / transaksi)
+      let payload = [];
+
+      if (Array.isArray(res.data)) {
+        // Jika langsung array
+        payload = res.data;
+      } else if (res.data?.data && Array.isArray(res.data.data)) {
+        // Jika data ada di key "data"
+        payload = res.data.data;
+      } else if (res.data?.transaksi && Array.isArray(res.data.transaksi)) {
+        // Jika data ada di key "transaksi"
+        payload = res.data.transaksi;
+      } else if (res.data && typeof res.data === "object") {
+        // Jika hanya object tunggal (1 transaksi)
+        payload = [res.data];
+      } else {
+        console.warn("Format data tidak dikenali:", res.data);
+      }
+
+      if (mounted) setOrders(payload);
+    } catch (err) {
+      const status = err.response?.status;
+      const data = err.response?.data;
+      console.error("Gagal ambil data transaksi (GET):", err.response || err);
+
+      if (err.response && err.response.data) {
+        try {
+          const text = JSON.stringify(err.response.data, null, 2);
+          console.error("Response body:", text);
+        } catch (e) {
+          console.error("Response body (non-JSON):", err.response.data);
+        }
+      }
+
+      setError(
+        `Gagal memuat transaksi dari server. Status: ${status || "-"}. ${
+          data?.message ? data.message : ""
+        }`
+      );
+    } finally {
+      if (mounted) setLoading(false);
+    }
+  };
+
+  load();
+  return () => {
+    mounted = false;
+  };
+}, []);
+
+
+  // Filter + Search
   const filteredOrders = orders.filter((order) => {
     const matchFilter =
       filter === "All" || order.status?.toLowerCase() === filter.toLowerCase();
     const matchSearch =
       order.order_id?.toLowerCase().includes(search.toLowerCase()) ||
-      order.customer?.toLowerCase().includes(search.toLowerCase());
+      order.user_id?.toString().includes(search.toLowerCase());
     return matchFilter && matchSearch;
   });
 
@@ -31,7 +92,7 @@ export default function Orders() {
       <div className="flex-grow-1 bg-light p-4">
         <h2 className="fw-bold mb-4">Orders</h2>
 
-        {/* Controls */}
+        {/* Filter dan Search */}
         <div className="d-flex justify-content-between mb-3">
           <div>
             <select
@@ -40,35 +101,44 @@ export default function Orders() {
               value={filter}
               onChange={(e) => setFilter(e.target.value)}
             >
-              <option value="All">All Status</option>
-              <option value="Pending">Pending</option>
-              <option value="Completed">Completed</option>
-              <option value="Cancelled">Cancelled</option>
+              <option value="All">Semua Status</option>
+              <option value="pending">Pending</option>
+              <option value="settlement">Completed</option>
+              <option value="cancel">Cancelled</option>
             </select>
           </div>
           <div>
             <input
               type="text"
               className="form-control"
-              placeholder="Search by ID / Customer"
+              placeholder="Cari ID order / user"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
             />
           </div>
         </div>
 
-        {/* Orders Table */}
+        {/* Tabel Orders */}
         <div className="card shadow-sm">
           <div className="card-body">
-            {filteredOrders.length === 0 ? (
-              <p className="text-center text-muted">Belum ada transaksi tersimpan</p>
+            {loading ? (
+              <div className="text-center py-4">
+                <div className="spinner-border"></div> Memuat transaksi...
+              </div>
+            ) : error ? (
+              <p className="text-danger text-center">{error}</p>
+            ) : filteredOrders.length === 0 ? (
+              <p className="text-center text-muted">
+                Belum ada transaksi tersimpan
+              </p>
             ) : (
-              <table className="table table-hover">
+              <table className="table table-hover align-middle">
                 <thead className="table-dark">
                   <tr>
                     <th>ID Order</th>
-                    <th>Customer</th>
-                    <th>Produk</th>
+                    <th>User ID</th>
+                    <th>Produk ID</th>
+                    <th>Jumlah</th>
                     <th>Total</th>
                     <th>Status</th>
                     <th>Tanggal</th>
@@ -79,15 +149,19 @@ export default function Orders() {
                   {filteredOrders.map((order, i) => (
                     <tr key={i}>
                       <td>{order.order_id}</td>
-                      <td>{order.customer}</td>
-                      <td>{order.product}</td>
-                      <td>Rp {Number(order.total).toLocaleString()}</td>
+                      <td>{order.user_id}</td>
+                      <td>{order.product_id}</td>
+                      <td>{order.qty}</td>
+                      <td>
+                        Rp{" "}
+                        {Number(order.gross_amount || 0).toLocaleString("id-ID")}
+                      </td>
                       <td>
                         <span
                           className={`badge ${
-                            order.status === "Completed"
+                            order.status === "settlement"
                               ? "bg-success"
-                              : order.status === "Pending"
+                              : order.status === "pending"
                               ? "bg-warning text-dark"
                               : "bg-danger"
                           }`}
@@ -95,7 +169,9 @@ export default function Orders() {
                           {order.status}
                         </span>
                       </td>
-                      <td>{order.date}</td>
+                      <td>
+                        {new Date(order.created_at).toLocaleString("id-ID")}
+                      </td>
                       <td>
                         <button
                           className="btn btn-sm btn-primary"
@@ -113,19 +189,40 @@ export default function Orders() {
         </div>
 
         {/* Modal Detail */}
-        <Modal show={!!selectedOrder} onHide={() => setSelectedOrder(null)} centered>
+        <Modal
+          show={!!selectedOrder}
+          onHide={() => setSelectedOrder(null)}
+          centered
+        >
           <Modal.Header closeButton>
             <Modal.Title>Detail Order</Modal.Title>
           </Modal.Header>
           <Modal.Body>
             {selectedOrder && (
               <>
-                <p><strong>ID Order:</strong> {selectedOrder.order_id}</p>
-                <p><strong>Customer:</strong> {selectedOrder.customer}</p>
-                <p><strong>Produk:</strong> {selectedOrder.product}</p>
-                <p><strong>Total:</strong> Rp {selectedOrder.total.toLocaleString()}</p>
-                <p><strong>Status:</strong> {selectedOrder.status}</p>
-                <p><strong>Tanggal:</strong> {selectedOrder.date}</p>
+                <p>
+                  <strong>ID Order:</strong> {selectedOrder.order_id}
+                </p>
+                <p>
+                  <strong>User ID:</strong> {selectedOrder.user_id}
+                </p>
+                <p>
+                  <strong>Produk ID:</strong> {selectedOrder.product_id}
+                </p>
+                <p>
+                  <strong>Jumlah:</strong> {selectedOrder.qty}
+                </p>
+                <p>
+                  <strong>Total:</strong> Rp{" "}
+                  {Number(selectedOrder.gross_amount).toLocaleString("id-ID")}
+                </p>
+                <p>
+                  <strong>Status:</strong> {selectedOrder.status}
+                </p>
+                <p>
+                  <strong>Waktu:</strong>{" "}
+                  {new Date(selectedOrder.created_at).toLocaleString("id-ID")}
+                </p>
               </>
             )}
           </Modal.Body>
