@@ -1,6 +1,6 @@
 // src/CartPage.jsx
 import React, { useEffect, useState } from "react";
-import api from "../api";
+import api, { createTransaksi, getPaymentStatus } from "../api";
 import { useNavigate } from "react-router-dom";
 
 export default function CartPage() {
@@ -10,7 +10,7 @@ export default function CartPage() {
   const [selectedItems, setSelectedItems] = useState([]);
   const [selectAll, setSelectAll] = useState(false);
 
-  // Merge duplicate products across carts
+  // 🔹 Normalize carts -> single array of items with cartId per item
   const mergeCartItems = (carts) => {
     const merged = {};
     carts.forEach((cart) => {
@@ -25,6 +25,7 @@ export default function CartPage() {
     return Object.values(merged);
   };
 
+  // 🔹 Fetch carts
   const refreshCarts = async () => {
     const token = localStorage.getItem("token");
     if (!token) {
@@ -33,16 +34,15 @@ export default function CartPage() {
     }
 
     try {
-      const res = await api.get("/carts");
+      const res = await api.get("/carts", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
       const mergedItems = mergeCartItems(res.data || []);
       setCartItems(mergedItems);
     } catch (err) {
       console.error("API error:", err.response?.data || err);
-      if (err.response?.status === 401) {
-        navigate("/login");
-      } else {
-        setCartItems([]);
-      }
+      if (err.response?.status === 401) navigate("/login");
+      else setCartItems([]);
     } finally {
       setLoading(false);
     }
@@ -52,87 +52,145 @@ export default function CartPage() {
     refreshCarts();
   }, []);
 
-  // ✅ Frontend-only select/deselect item
+  // ✅ Frontend-only select/deselect
   const toggleSelectItem = (productId) => {
-    if (selectedItems.includes(productId)) {
-      setSelectedItems(selectedItems.filter((id) => id !== productId));
-    } else {
-      setSelectedItems([...selectedItems, productId]);
-    }
+    setSelectedItems((prev) =>
+      prev.includes(productId)
+        ? prev.filter((id) => id !== productId)
+        : [...prev, productId]
+    );
   };
 
-  // ✅ Frontend-only select all
+  // ✅ Select all toggle
   const toggleSelectAll = () => {
     if (selectAll) {
       setSelectedItems([]);
       setSelectAll(false);
     } else {
-      setSelectedItems(cartItems.map((item) => item.product_id));
+      setSelectedItems(cartItems.map((i) => i.product_id));
       setSelectAll(true);
     }
   };
 
-  // Remove product from cart (still API call)
+  // 🔹 Remove product (frontend fallback logic)
   const removeProduct = async (cartId, productId) => {
     const token = localStorage.getItem("token");
-    if (!token) {
-      navigate("/login");
-      return;
-    }
+    if (!token) return navigate("/login");
 
     try {
-      await api.delete(`/carts/${cartId}`, {
-        data: { product_id: productId },
-      });
+      // Find the current cart group and its items
+      const res = await api.get("/carts");
+      const thisCart = res.data.find((c) => c.id === cartId);
+
+      if (!thisCart) {
+        console.warn("Cart not found for removal");
+        return;
+      }
+
+      const remainingItems = (thisCart.items || []).filter(
+        (it) => it.product_id !== productId
+      );
+
+      // If no items remain, just delete the cart
+      if (remainingItems.length === 0) {
+        await api.delete(`/carts/${cartId}`);
+        await refreshCarts();
+        return;
+      }
+
+      // Emulate removing a single item by recreating the cart:
+      // 1) Delete the old cart
+      await api.delete(`/carts/${cartId}`);
+
+      // 2) Re-add remaining items (backend will regroup by category automatically)
+      await Promise.all(
+        remainingItems.map((it) =>
+          api.post(`/carts`, {
+            product_id: it.product_id,
+            product_detail_id: it.product_detail_id ?? null,
+            qty: it.qty,
+          })
+        )
+      );
+
       await refreshCarts();
     } catch (err) {
       console.error("Error removing product:", err.response?.data || err);
+      alert(
+        err.response?.data?.message ||
+          "Gagal menghapus item dari cart. Coba lagi."
+      );
     }
   };
 
-  // Update quantity (still API call)
+  // 🔹 Update quantity
   const updateQuantity = async (cartId, productId, newQty) => {
     const token = localStorage.getItem("token");
-    if (!token) {
-      navigate("/login");
-      return;
-    }
+    if (!token) return navigate("/login");
 
     try {
       if (newQty < 1) {
+        // Emulate "remove" via fallback
         await removeProduct(cartId, productId);
         return;
       }
 
-      await api.put(`/carts/${cartId}`, { product_id: productId, qty: newQty });
+      await api.put(
+        `/carts/${cartId}`,
+        { product_id: productId, qty: newQty },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
       await refreshCarts();
     } catch (err) {
       console.error("Error updating quantity:", err.response?.data || err);
     }
   };
 
-  // ✅ Checkout logic (only here we call backend)
-  const handleCheckout = async () => {
+  // 🔹 Clear whole cart manually
+  const clearCart = async (cartId) => {
     const token = localStorage.getItem("token");
-    if (!token) {
-      navigate("/login");
-      return;
-    }
+    if (!token) return navigate("/login");
+
+    if (!window.confirm("Clear this entire cart?")) return;
 
     try {
+      await api.delete(`/carts/${cartId}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      await refreshCarts();
+    } catch (err) {
+      console.error("Error clearing cart:", err.response?.data || err);
+    }
+  };
+
+  // ✅ Checkout logic (single product only; opens Midtrans and polls backend)
+  const handleCheckout = async () => {
+    const token = localStorage.getItem("token");
+    if (!token) return navigate("/login");
+
+    try {
+      // Compute selected products and totals locally to avoid TDZ issues
+      const selectedProductsLocal = cartItems.filter((i) =>
+        selectedItems.includes(i.product_id)
+      );
+      const totalPriceLocal = selectedProductsLocal.reduce(
+        (sum, i) => sum + (i.product?.harga || 0) * i.qty,
+        0
+      );
       let payload = {};
 
       if (selectAll) {
-        const cartId = cartItems[0]?.cartId;
-        if (!cartId) {
-          alert("Tidak ada cart untuk checkout.");
-          return;
-        }
-        payload = { cart_id: cartId };
+        // ❌ Avoid calling cart checkout (DB issue with status column)
+        alert("Cart checkout temporarily disabled. Please checkout per product.");
+        return;
       } else if (selectedItems.length === 1) {
+        // ✅ Single product checkout
         const product = cartItems.find(
-          (item) => item.product_id === selectedItems[0]
+          (i) => i.product_id === selectedItems[0]
         );
+        if (!product) return alert("Produk tidak ditemukan.");
+
         payload = {
           product_id: product.product_id,
           qty: product.qty,
@@ -144,26 +202,75 @@ export default function CartPage() {
         return;
       }
 
-      const res = await api.post("/transaksi", payload);
+      const res = await createTransaksi(payload);
 
-      if (res.data.redirect_url) {
-        window.location.href = res.data.redirect_url;
-      } else {
-        alert("Checkout gagal: redirect_url tidak ditemukan.");
+      const { transaksi, redirect_url } = res.data || {};
+
+      if (!redirect_url || !transaksi?.order_id) {
+        alert("Checkout gagal: data transaksi tidak lengkap.");
+        return;
       }
+
+      const payWindow = window.open(redirect_url, "_blank");
+
+      // Poll backend using existing paymentSuccess endpoint
+      const pollStatus = async () => {
+        try {
+          const statusRes = await getPaymentStatus(transaksi.order_id);
+          const status = statusRes.data?.status || statusRes.data?.transaksi?.status;
+
+          if (["settlement", "capture"].includes(status)) {
+            // Save a simple record to localStorage for Orders page
+            const saved = JSON.parse(localStorage.getItem("transaksiData") || "[]");
+            const newRecord = {
+              order_id: transaksi.order_id,
+              customer: "You",
+              product: selectedProductsLocal.map((i) => i.product.nama).join(", "),
+              total: totalPriceLocal,
+              status: "Completed",
+              date: new Date().toLocaleString(),
+            };
+            localStorage.setItem("transaksiData", JSON.stringify([newRecord, ...saved]));
+
+            if (payWindow && !payWindow.closed) payWindow.close();
+            alert("Pembayaran berhasil!");
+            await refreshCarts();
+            return true;
+          }
+
+          if (["deny", "cancel", "expire"].includes(status)) {
+            if (payWindow && !payWindow.closed) payWindow.close();
+            alert(`Pembayaran gagal: ${status}`);
+            return true;
+          }
+
+          return false;
+        } catch (e) {
+          // Keep polling on transient errors
+          return false;
+        }
+      };
+
+      // Poll every 3s up to 3 minutes
+      const start = Date.now();
+      const interval = setInterval(async () => {
+        const done = await pollStatus();
+        if (done || Date.now() - start > 180000) {
+          clearInterval(interval);
+        }
+      }, 3000);
     } catch (err) {
       console.error("Error during checkout:", err.response?.data || err);
       alert(err.response?.data?.message || "Checkout gagal");
     }
   };
 
-  // Selected products
-  const selectedProducts = cartItems.filter((item) =>
-    selectedItems.includes(item.product_id)
+  const selectedProducts = cartItems.filter((i) =>
+    selectedItems.includes(i.product_id)
   );
 
   const totalPrice = selectedProducts.reduce(
-    (sum, item) => sum + (item.product?.harga || 0) * item.qty,
+    (sum, i) => sum + (i.product?.harga || 0) * i.qty,
     0
   );
 
@@ -222,7 +329,9 @@ export default function CartPage() {
                   </div>
                   <div>
                     <h5 className="mb-1">{item.product.nama}</h5>
-                    <p className="text-muted mb-0">Rp {item.product.harga}</p>
+                    <p className="text-muted mb-0">
+                      Rp {item.product.harga.toLocaleString()}
+                    </p>
                   </div>
                 </div>
 
@@ -254,7 +363,7 @@ export default function CartPage() {
                 </div>
 
                 <p className="fw-bold mb-0 text-nowrap">
-                  Rp {item.product.harga * item.qty}
+                  Rp {(item.product.harga * item.qty).toLocaleString()}
                 </p>
               </div>
             ))
@@ -279,13 +388,15 @@ export default function CartPage() {
                       <span>
                         {item.product.nama} × {item.qty}
                       </span>
-                      <span>Rp {item.product.harga * item.qty}</span>
+                      <span>
+                        Rp {(item.product.harga * item.qty).toLocaleString()}
+                      </span>
                     </div>
                   ))}
                   <hr />
                   <div className="d-flex justify-content-between fw-bold">
                     <span>Total</span>
-                    <span>Rp {totalPrice}</span>
+                    <span>Rp {totalPrice.toLocaleString()}</span>
                   </div>
                   <button
                     className="btn btn-primary w-100 mt-3"

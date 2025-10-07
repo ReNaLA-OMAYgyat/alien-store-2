@@ -28,3 +28,13 @@ export const getSubcategories = async () => {
 };
 
 export default api;
+
+// Transactions
+export const createTransaksi = async (payload) => {
+  return await api.post("/transaksi", payload);
+};
+
+// Use paymentSuccess endpoint to sync and retrieve latest status without changing backend
+export const getPaymentStatus = async (orderId) => {
+  return await api.get(`/payment/success/${orderId}`);
+};
