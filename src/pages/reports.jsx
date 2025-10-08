@@ -1,61 +1,78 @@
 import React, { useEffect, useState, useRef } from "react";
 import Sidebar from "../components/Admin/sidebar";
 import Chart from "chart.js/auto";
+import api from "../api"; // pastikan file api.js kamu udah setup axios
 
 export default function Reports() {
   const [loading, setLoading] = useState(true);
-  const [summary, setSummary] = useState({});
+  const [summary, setSummary] = useState({
+    totalSales: 0,
+    totalRevenue: 0,
+    totalCustomers: 0,
+  });
   const [transactions, setTransactions] = useState([]);
   const chartRef = useRef(null);
   const chartInstance = useRef(null);
 
   useEffect(() => {
-    // Dummy data
-    setTimeout(() => {
-      setSummary({
-        totalSales: 152,
-        totalRevenue: 3200000,
-        totalCustomers: 45,
-      });
+    const loadData = async () => {
+      try {
+        const res = await api.get("/transaksi-admin");
+        const data = res.data || [];
 
-      setTransactions([
-        { id: 1, customer: "John Doe", amount: 250000, date: "2025-09-01" },
-        { id: 2, customer: "Jane Smith", amount: 500000, date: "2025-09-03" },
-        { id: 3, customer: "Michael Lee", amount: 125000, date: "2025-09-07" },
-      ]);
+        // 🧮 Hitung summary dari data transaksi
+        const totalSales = data.length;
+        const totalRevenue = data.reduce(
+          (sum, t) => sum + Number(t.gross_amount || 0),
+          0
+        );
+        const uniqueCustomers = new Set(
+          data.map((t) => t.user_id)
+        ).size;
 
-      setLoading(false);
-    }, 800);
+        // 💾 Simpan hasil summary & transaksi
+        setSummary({
+          totalSales,
+          totalRevenue,
+          totalCustomers: uniqueCustomers,
+        });
+        setTransactions(data);
+      } catch (error) {
+        console.error("Gagal memuat data laporan:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadData();
   }, []);
 
+  // Buat grafik setelah data didapat
   useEffect(() => {
-    if (!loading) {
-      if (chartInstance.current) {
-        chartInstance.current.destroy();
-      }
+    if (!loading && transactions.length > 0) {
+      if (chartInstance.current) chartInstance.current.destroy();
+
+      // Kelompokkan pendapatan per bulan
+      const monthlyRevenue = Array(12).fill(0);
+      transactions.forEach((t) => {
+        if (t.transaction_time) {
+          const month = new Date(t.transaction_time).getMonth();
+          monthlyRevenue[month] += t.gross_amount || 0;
+        }
+      });
 
       const ctx = chartRef.current.getContext("2d");
       chartInstance.current = new Chart(ctx, {
         type: "line",
         data: {
           labels: [
-            "Jan",
-            "Feb",
-            "Mar",
-            "Apr",
-            "May",
-            "Jun",
-            "Jul",
-            "Aug",
-            "Sep",
-            "Oct",
-            "Nov",
-            "Dec",
+            "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+            "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
           ],
           datasets: [
             {
               label: "Revenue",
-              data: [200000, 300000, 500000, 400000, 600000, 800000, 700000, 900000, 650000, 720000, 850000, 950000],
+              data: monthlyRevenue,
               borderColor: "rgba(54, 162, 235, 1)",
               backgroundColor: "rgba(54, 162, 235, 0.2)",
               fill: true,
@@ -63,18 +80,9 @@ export default function Reports() {
             },
           ],
         },
-        options: {
-          responsive: true,
-          plugins: {
-            legend: {
-              display: true,
-              position: "top",
-            },
-          },
-        },
       });
     }
-  }, [loading]);
+  }, [loading, transactions]);
 
   return (
     <div className="d-flex">
@@ -101,7 +109,9 @@ export default function Reports() {
                 <div className="card text-bg-success shadow-sm">
                   <div className="card-body">
                     <h5 className="card-title">Total Revenue</h5>
-                    <p className="fs-4 fw-bold">Rp {summary.totalRevenue.toLocaleString()}</p>
+                    <p className="fs-4 fw-bold">
+                      Rp {summary.totalRevenue.toLocaleString()}
+                    </p>
                   </div>
                 </div>
               </div>
@@ -138,6 +148,7 @@ export default function Reports() {
                         <th>ID</th>
                         <th>Customer</th>
                         <th>Amount</th>
+                        <th>Status</th>
                         <th>Date</th>
                       </tr>
                     </thead>
@@ -145,9 +156,10 @@ export default function Reports() {
                       {transactions.map((t) => (
                         <tr key={t.id}>
                           <td>{t.id}</td>
-                          <td>{t.customer}</td>
-                          <td>Rp {t.amount.toLocaleString()}</td>
-                          <td>{t.date}</td>
+                          <td>{t.user?.name || "Unknown"}</td>
+                          <td>Rp {t.gross_amount?.toLocaleString()}</td>
+                          <td>{t.status}</td>
+                          <td>{t.transaction_time || "-"}</td>
                         </tr>
                       ))}
                     </tbody>
