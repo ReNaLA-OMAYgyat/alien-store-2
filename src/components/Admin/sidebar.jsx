@@ -1,7 +1,7 @@
 // src/components/Sidebar.jsx
 import React, { useEffect, useState } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
-
+import logoImg from "../../assets/images/Branding/alienStoreLogo_noBrand.png";
 export default function Sidebar() {
   const navigate = useNavigate();
   const [user, setUser] = useState(null);
@@ -42,11 +42,22 @@ export default function Sidebar() {
         zIndex: 1000,
       }}
     >
-      {/* Logo / Brand */}
-      <div className="d-flex align-items-center justify-content-center mb-4">
-        <i className="bi bi-bag-check-fill me-2" style={{ fontSize: 22 }}></i>
-        <h4 className="fw-bold m-0">AlienStore</h4>
-      </div>
+     {/* Logo / Brand */}
+<div className="d-flex flex-column align-items-center justify-content-center mb-4">
+  <img
+    src={logoImg} 
+    alt="AlienStore Logo"
+    style={{
+      width: "80px",
+      height: "80px",
+      objectFit: "contain",
+      borderRadius: "12px",
+      marginBottom: "10px",
+    }}
+  />
+  <h4 className="fw-bold text-white m-0">AlienStore</h4>
+</div>
+
 
       {/* Navigation */}
       <ul className="nav nav-pills flex-column mb-auto">
