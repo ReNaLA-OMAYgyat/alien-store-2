@@ -17,7 +17,7 @@ export default function Navbar() {
   const location = useLocation(); // 👈 detect current page
   const navbarRef = useRef(null);
 
-  const [userRole, setUserRole] = useState(localStorage.getItem("role") || null);
+  const [userRole, setUserRole] = useState(localStorage.getItem("role") || sessionStorage.getItem("role") || null);
   const [cartCount, setCartCount] = useState(0);
   const [categories, setCategories] = useState(fallbackCategories);
   const [subcategories, setSubcategories] = useState([]);
@@ -145,6 +145,8 @@ useEffect(() => {
   const handleLogoutClick = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("role");
+    sessionStorage.removeItem("token");
+    sessionStorage.removeItem("role");
     setUserRole(null);
     setCartCount(0);
     window.dispatchEvent(new Event("userLogout"));
@@ -153,7 +155,8 @@ useEffect(() => {
   };
 
   const handleCartClick = () => {
-    if (!localStorage.getItem("token")) navigate("/login");
+    const token = localStorage.getItem("token") || sessionStorage.getItem("token");
+    if (!token) navigate("/login");
     else navigate("/cart");
   };
 

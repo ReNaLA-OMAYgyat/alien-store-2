@@ -98,3 +98,25 @@ body.as-no-scroll {
     padding: 2px 4px !important;
   }
 }
+
+/* Auth page helpers */
+.auth-bg {
+  background: #1f2937; /* fallback */
+  background: radial-gradient(1200px 600px at 10% -10%, rgba(96,165,250,0.08), transparent 40%),
+              radial-gradient(1000px 500px at 110% 10%, rgba(167,139,250,0.06), transparent 35%),
+              #1f2937;
+}
+
+.hr-text {
+  display: flex;
+  align-items: center;
+  color: #9ca3af;
+  font-size: 0.9rem;
+}
+.hr-text::before,
+.hr-text::after {
+  content: "";
+  flex: 1;
+  border-top: 1px solid #374151;
+  margin: 0 0.75rem;
+}

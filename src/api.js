@@ -9,9 +9,9 @@ const api = axios.create({
   },
 });
 
-// Attach Authorization header if token exists
+// Attach Authorization header if token exists (supports both localStorage and sessionStorage)
 api.interceptors.request.use((config) => {
-  const token = localStorage.getItem("token");
+  const token = localStorage.getItem("token") || sessionStorage.getItem("token");
   if (token) {
     config.headers = config.headers || {};
     config.headers.Authorization = `Bearer ${token}`;

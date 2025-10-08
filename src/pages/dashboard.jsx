@@ -9,6 +9,8 @@ export default function Dashboard() {
   const [subcategories, setSubcategories] = useState([]);
   const [loadingSubcats, setLoadingSubcats] = useState(false);
 
+  const getToken = () => localStorage.getItem("token") || sessionStorage.getItem("token");
+
   // Table UX state
   const [searchQuery, setSearchQuery] = useState("");
   const [sortConfig, setSortConfig] = useState({ key: "id", direction: "asc" });
@@ -53,7 +55,7 @@ export default function Dashboard() {
   // === SAVE SUBCATEGORY ===
   const handleSaveSubcategory = async (data) => {
     try {
-      const token = localStorage.getItem("token");
+      const token = getToken();
 
       const payload = {
         name: data.name,
@@ -158,7 +160,7 @@ export default function Dashboard() {
     if (!subToDelete) return;
     try {
       setDeleting(true);
-      const token = localStorage.getItem("token");
+      const token = getToken();
       await api.delete(`/subcategories/${subToDelete.id}`, {
         headers: { Authorization: `Bearer ${token}` },
       });

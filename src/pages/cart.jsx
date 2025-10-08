@@ -10,6 +10,10 @@ export default function CartPage() {
   const [selectedItems, setSelectedItems] = useState([]);
   const [selectAll, setSelectAll] = useState(false);
 
+  // Read token from either localStorage or sessionStorage
+  const getToken = () => localStorage.getItem("token") || sessionStorage.getItem("token");
+  const getRole = () => localStorage.getItem("role") || sessionStorage.getItem("role");
+
   // 🔹 Normalize carts -> single array of items with cartId per item
   const mergeCartItems = (carts) => {
     const merged = {};
@@ -27,7 +31,7 @@ export default function CartPage() {
 
   // 🔹 Fetch carts
   const refreshCarts = async () => {
-    const token = localStorage.getItem("token");
+    const token = getToken();
     if (!token) {
       navigate("/login");
       return;
@@ -74,12 +78,12 @@ export default function CartPage() {
 
   // 🔹 Remove product (frontend fallback logic)
   const removeProduct = async (cartId, productId) => {
-    const token = localStorage.getItem("token");
+    const token = getToken();
     if (!token) return navigate("/login");
 
     try {
       // Find the current cart group and its items
-      const res = await api.get("/carts");
+      const res = await api.get("/carts", { headers: { Authorization: `Bearer ${token}` } });
       const thisCart = res.data.find((c) => c.id === cartId);
 
       if (!thisCart) {
@@ -125,7 +129,7 @@ export default function CartPage() {
 
   // 🔹 Update quantity
   const updateQuantity = async (cartId, productId, newQty) => {
-    const token = localStorage.getItem("token");
+    const token = getToken();
     if (!token) return navigate("/login");
 
     try {
@@ -149,7 +153,7 @@ export default function CartPage() {
 
   // 🔹 Clear whole cart manually
   const clearCart = async (cartId) => {
-    const token = localStorage.getItem("token");
+    const token = getToken();
     if (!token) return navigate("/login");
 
     if (!window.confirm("Clear this entire cart?")) return;
@@ -166,8 +170,13 @@ export default function CartPage() {
 
   // ✅ Checkout logic (single product only; opens Midtrans and polls backend)
   const handleCheckout = async () => {
-    const token = localStorage.getItem("token");
+    const token = getToken();
+    const role = getRole();
     if (!token) return navigate("/login");
+    if (role !== "User") {
+      alert("Akun Anda tidak memiliki akses untuk checkout. Silakan login sebagai User.");
+      return navigate("/login");
+    }
 
     try {
       // Compute selected products and totals locally to avoid TDZ issues

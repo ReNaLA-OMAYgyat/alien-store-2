@@ -8,6 +8,8 @@ export default function Customers() {
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(true);
 
+  const getToken = () => localStorage.getItem("token") || sessionStorage.getItem("token");
+
   const [showEdit, setShowEdit] = useState(false);
   const [editCustomer, setEditCustomer] = useState(null);
 
@@ -17,7 +19,7 @@ export default function Customers() {
   }, []);
 
   const fetchCustomers = () => {
-    const token = localStorage.getItem("token");
+    const token = getToken();
     api
       .get("/user", {
         headers: { Authorization: `Bearer ${token}` },
@@ -33,7 +35,7 @@ export default function Customers() {
   };
 
   const fetchRoles = () => {
-    const token = localStorage.getItem("token");
+    const token = getToken();
     api
       .get("/role", {
         headers: { Authorization: `Bearer ${token}` },
@@ -57,7 +59,7 @@ export default function Customers() {
 
   const handleSave = (e) => {
     e.preventDefault();
-    const token = localStorage.getItem("token");
+    const token = getToken();
     api
       .put(`/user/${editCustomer.id}`, editCustomer, {
         headers: { Authorization: `Bearer ${token}` },
@@ -73,7 +75,7 @@ export default function Customers() {
 
   const handleDelete = (id) => {
     if (!window.confirm("Yakin mau hapus customer ini?")) return;
-    const token = localStorage.getItem("token");
+    const token = getToken();
     api
       .delete(`/user/${id}`, {
         headers: { Authorization: `Bearer ${token}` },

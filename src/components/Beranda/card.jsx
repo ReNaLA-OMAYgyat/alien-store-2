@@ -1,11 +1,15 @@
 import React, { useState } from "react";
 import { motion } from "framer-motion";
-import axios from "axios";
+import { useNavigate } from "react-router-dom";
+import api, { createTransaksi } from "../../api";
 import "./card.css";
 
 export default function ProductCard({ product }) {
+  const navigate = useNavigate();
   const [localStock, setLocalStock] = useState(product.stok);
   const [quantity, setQuantity] = useState(1);
+
+  const getToken = () => localStorage.getItem("token") || sessionStorage.getItem("token");
 
   const isOutOfStock = !localStock || localStock <= 0;
 
@@ -23,17 +27,21 @@ export default function ProductCard({ product }) {
       return;
     }
 
-    try {
-      await axios.post(
-        "http://localhost:8000/api/carts",
-        { product_id: product.id, qty: quantity },
-        { headers: { Authorization: "Bearer " + localStorage.getItem("token") } }
-      );
+    const token = getToken();
+    if (!token) {
+      navigate("/login");
+      return;
+    }
 
+    try {
+      await api.post("/carts", { product_id: product.id, qty: quantity });
       alert(`${product.nama} berhasil ditambahkan ke keranjang!`);
+      // Optionally notify navbar to refresh cart count
+      window.dispatchEvent(new CustomEvent("cartUpdated", { detail: { increment: quantity } }));
     } catch (err) {
       console.error("Error adding to cart:", err.response?.data || err);
-      alert("Gagal menambahkan produk ke keranjang.");
+      if (err.response?.status === 401) navigate("/login");
+      else alert("Gagal menambahkan produk ke keranjang.");
     }
   };
 
@@ -43,22 +51,29 @@ export default function ProductCard({ product }) {
       return;
     }
 
-    try {
-      const response = await axios.post(
-        "http://localhost:8000/api/transaksi",
-        { product_id: product.id, qty: quantity },
-        { headers: { Authorization: "Bearer " + localStorage.getItem("token") } }
-      );
+    const token = getToken();
+    const role = localStorage.getItem("role") || sessionStorage.getItem("role");
+    if (!token) {
+      navigate("/login");
+      return;
+    }
+    if (role !== "User") {
+      alert("Akun Anda tidak memiliki akses untuk checkout. Silakan login sebagai User.");
+      navigate("/login");
+      return;
+    }
 
+    try {
+      const response = await createTransaksi({ product_id: product.id, qty: quantity });
       const redirectUrl = response.data.redirect_url;
       if (redirectUrl) {
-        window.location.href = redirectUrl;
+        window.open(redirectUrl, "_blank");
       } else {
         alert("Checkout gagal: redirect_url tidak ditemukan.");
       }
     } catch (err) {
       console.error("Error during checkout:", err.response?.data || err);
-      alert("Gagal melakukan checkout.");
+      alert(err.response?.data?.message || "Gagal melakukan checkout.");
     }
   };
 
