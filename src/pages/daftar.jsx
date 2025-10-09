@@ -73,7 +73,7 @@ export default function Daftar() {
 
         {/* Form Card */}
         <div className="col-12 col-lg-6 d-flex justify-content-center">
-<div className="card shadow-lg border-0 p-4 my-5" style={{ width: "100%", maxWidth: 430, borderRadius: 16, backgroundColor: "#ffffff", color: "#0f172a" }}>
+<div className="card auth-card shadow-lg border-0 p-4 my-5">
             {/* Logo */}
             <div className="text-center mb-3">
               <img src={logoImg} alt="AlienStore" style={{ height: 90 }} />
@@ -101,7 +101,6 @@ className={`form-control auth-input ${errors.name ? "is-invalid" : ""}`}
                   required
                   autoComplete="name"
                   disabled={loading}
-                  style={{ background: "#ffffff", borderColor: "#d1d5db", color: "#0f172a" }}
                 />
                 {errors.name && <div className="invalid-feedback d-block">{errors.name[0]}</div>}
               </div>
@@ -120,7 +119,6 @@ className={`form-control auth-input ${errors.email ? "is-invalid" : ""}`}
                   autoComplete="email"
                   inputMode="email"
                   disabled={loading}
-                  style={{ background: "#ffffff", borderColor: "#d1d5db", color: "#0f172a" }}
                 />
                 {errors.email && <div className="invalid-feedback d-block">{errors.email[0]}</div>}
               </div>
@@ -139,7 +137,6 @@ className={`form-control auth-input ${errors.password ? "is-invalid" : ""}`}
                     required
                     autoComplete="new-password"
                     disabled={loading}
-                    style={{ background: "#ffffff", borderColor: "#d1d5db", color: "#0f172a" }}
                   />
                   <button
                     type="button"
@@ -170,7 +167,6 @@ className="form-control auth-input"
                     required
                     autoComplete="new-password"
                     disabled={loading}
-                    style={{ background: "#ffffff", borderColor: "#d1d5db", color: "#0f172a" }}
                   />
                   <button
                     type="button"

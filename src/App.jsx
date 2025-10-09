@@ -13,6 +13,7 @@ import AboutPage from "./pages/about";
 import Orders from "./pages/orders";
 import Customers from "./pages/customers";
 import Reports from "./pages/reports";
+import PaymentSuccess from "./pages/payment-success";
 export default function App() {
   const location = useLocation();
 
@@ -83,6 +84,7 @@ export default function App() {
         <Route path="/cart" element={<Cart />} />
         <Route path="/beranda" element={<Beranda />} />
         <Route path="/about" element={<AboutPage />} />
+        <Route path="/payment/success/:orderId" element={<PaymentSuccess />} />
 
         <Route path="*" element={<Navigate to="/beranda" replace />} />
       </Routes>

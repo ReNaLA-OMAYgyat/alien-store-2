@@ -82,7 +82,7 @@ export default function Login() {
 
         {/* Form Card */}
         <div className="col-12 col-lg-6 d-flex justify-content-center">
-<div className="card shadow-lg border-0 p-4 my-5" style={{ width: "100%", maxWidth: 430, borderRadius: 16, backgroundColor: "#ffffff", color: "#0f172a" }}>
+<div className="card auth-card shadow-lg border-0 p-4 my-5">
             {/* Logo */}
             <div className="text-center mb-3">
               <img src={logoImg} alt="AlienStore" style={{ height: 90 }} />
@@ -112,7 +112,6 @@ className="form-control auth-input"
                   inputMode="email"
                   autoFocus
                   disabled={loading}
-                  style={{ background: "#ffffff", borderColor: "#d1d5db", color: "#0f172a" }}
                 />
               </div>
 
@@ -130,7 +129,6 @@ className="form-control auth-input"
                     required
                     autoComplete="current-password"
                     disabled={loading}
-                    style={{ background: "#ffffff", borderColor: "#d1d5db", color: "#0f172a" }}
                   />
                   <button
                     type="button"
@@ -151,7 +149,7 @@ className="form-control auth-input"
                   <input className="form-check-input" type="checkbox" id="remember" checked={remember} onChange={(e) => setRemember(e.target.checked)} />
                   <label className="form-check-label" htmlFor="remember">Remember me</label>
                 </div>
-<Link className="text-decoration-none" to="#" style={{ color: "#0d6efd" }}>Forgot password?</Link>
+<Link className="auth-link" to="#">Forgot password?</Link>
               </div>
 
               <button type="submit" className="btn btn-primary w-100 auth-btn" disabled={loading}>
