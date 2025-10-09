@@ -8,6 +8,9 @@ export default function Orders() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
+  // Logged-in user info (name, email)
+  const [currentUser, setCurrentUser] = useState(null);
+
   // UX state
   const [filter, setFilter] = useState("All");
   const [searchQuery, setSearchQuery] = useState("");
@@ -20,6 +23,11 @@ export default function Orders() {
   const [selectedOrder, setSelectedOrder] = useState(null);
 
   useEffect(() => {
+    // load current user from storage
+    try {
+      const u = JSON.parse(localStorage.getItem("user")) || JSON.parse(sessionStorage.getItem("user"));
+      if (u) setCurrentUser(u);
+    } catch {}
     fetchOrders();
   }, []);
 
@@ -100,7 +108,15 @@ export default function Orders() {
       <Sidebar />
 
       <div className="flex-grow-1 bg-light p-4">
-        <h2 className="fw-bold mb-4">Dashboard Transaksi</h2>
+        <div className="d-flex justify-content-between align-items-center mb-3">
+          <h2 className="fw-bold mb-0">Dashboard Transaksi</h2>
+          {currentUser && (
+            <div className="text-end" style={{ lineHeight: 1.2 }}>
+              <div className="fw-semibold">{currentUser.name}</div>
+              <div className="text-secondary small">{currentUser.email}</div>
+            </div>
+          )}
+        </div>
 
         {/* Filter + Search + Density */}
         <div className="d-flex flex-column flex-lg-row align-items-lg-center justify-content-between gap-2 mb-3">

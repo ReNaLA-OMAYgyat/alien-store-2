@@ -220,7 +220,8 @@ export default function CartPage() {
         return;
       }
 
-      const payWindow = window.open(redirect_url, "_blank");
+      const payWindow = null;
+      window.location.assign(redirect_url);
 
       // Poll backend using existing paymentSuccess endpoint
       const pollStatus = async () => {
@@ -286,137 +287,302 @@ export default function CartPage() {
   if (loading) return <p className="text-center mt-5">Loading cart...</p>;
 
   return (
-    <div className="container my-5">
-      <h1 className="mb-4">Shopping Cart</h1>
+    <div className="container-fluid px-2 px-md-4 py-3" style={{ backgroundColor: "#f8f9fa", minHeight: "100vh" }}>
+      {/* Mobile Header */}
+      <div className="d-lg-none mb-2">
+        <div className="d-flex align-items-center justify-content-between mb-2">
+          <div>
+            <h3 className="mb-0 fw-bold text-dark">Shopping Cart</h3>
+            <p className="text-muted mb-0 small">Review your items</p>
+          </div>
+          <span className="badge bg-primary px-2 py-1">
+            {cartItems.length} {cartItems.length === 1 ? 'item' : 'items'}
+          </span>
+        </div>
 
-      {/* Select All */}
-      <div className="mb-3 d-flex align-items-center">
-        <input
-          type="checkbox"
-          checked={selectAll}
-          onChange={toggleSelectAll}
-          className="form-check-input me-2"
-        />
-        <label className="form-check-label">Select All</label>
-      </div>
-
-      <div className="row">
-        <div className="col-md-8">
-          {cartItems.length > 0 ? (
-            cartItems.map((item) => (
-              <div
-                key={item.product_id}
-                className="card shadow-sm mb-3 p-3 d-flex flex-row align-items-center justify-content-between"
-              >
-                {/* Checkbox */}
+        {/* Mobile Select All */}
+        <div className="card border-0 shadow-sm">
+          <div className="card-body py-2">
+            <div className="d-flex align-items-center justify-content-between">
+              <div className="d-flex align-items-center">
                 <input
                   type="checkbox"
-                  checked={selectedItems.includes(item.product_id)}
-                  onChange={() => toggleSelectItem(item.product_id)}
-                  className="form-check-input me-3"
+                  checked={selectAll}
+                  onChange={toggleSelectAll}
+                  className="form-check-input me-2"
+                  id="selectAll"
+                  style={{ transform: "scale(1.1)" }}
                 />
-
-                <div className="d-flex align-items-center gap-3 flex-grow-1">
-                  <div
-                    style={{
-                      width: "80px",
-                      height: "80px",
-                      overflow: "hidden",
-                      borderRadius: "8px",
-                      flexShrink: 0,
-                    }}
-                  >
-                    <img
-                      src={item.product.image_url || "/contoh.png"}
-                      alt={item.product.nama}
-                      style={{
-                        width: "100%",
-                        height: "100%",
-                        objectFit: "cover",
-                      }}
-                    />
-                  </div>
-                  <div>
-                    <h5 className="mb-1">{item.product.nama}</h5>
-                    <p className="text-muted mb-0">
-                      Rp {item.product.harga.toLocaleString()}
-                    </p>
-                  </div>
-                </div>
-
-                <div className="d-flex align-items-center gap-2">
-                  <button
-                    className="btn btn-sm btn-outline-secondary"
-                    onClick={() =>
-                      updateQuantity(item.cartId, item.product_id, item.qty - 1)
-                    }
-                  >
-                    -
-                  </button>
-                  <span>{item.qty}</span>
-                  <button
-                    className="btn btn-sm btn-outline-secondary"
-                    onClick={() =>
-                      updateQuantity(item.cartId, item.product_id, item.qty + 1)
-                    }
-                  >
-                    +
-                  </button>
-
-                  <button
-                    className="btn btn-sm btn-danger"
-                    onClick={() => removeProduct(item.cartId, item.product_id)}
-                  >
-                    Remove
-                  </button>
-                </div>
-
-                <p className="fw-bold mb-0 text-nowrap">
-                  Rp {(item.product.harga * item.qty).toLocaleString()}
-                </p>
+                <label className="form-check-label fw-semibold small" htmlFor="selectAll">
+                  Select All
+                </label>
               </div>
-            ))
+              <div className="text-muted small">
+                {selectedItems.length}/{cartItems.length}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Desktop Header */}
+      <div className="d-none d-lg-block">
+        <div className="row">
+          <div className="col-12">
+            <div className="d-flex align-items-center justify-content-between mb-4">
+              <div>
+                <h1 className="mb-1 fw-bold text-dark">Shopping Cart</h1>
+                <p className="text-muted mb-0">Review your items and proceed to checkout</p>
+              </div>
+              <div className="d-flex align-items-center gap-3">
+                <span className="badge bg-primary fs-6 px-3 py-2">
+                  {cartItems.length} {cartItems.length === 1 ? 'item' : 'items'}
+                </span>
+              </div>
+            </div>
+
+            {/* Select All */}
+            <div className="mb-4">
+              <div className="card border-0 shadow-sm">
+                <div className="card-body py-3">
+                  <div className="d-flex align-items-center justify-content-between">
+                    <div className="d-flex align-items-center">
+                      <input
+                        type="checkbox"
+                        checked={selectAll}
+                        onChange={toggleSelectAll}
+                        className="form-check-input me-3"
+                        id="selectAllDesktop"
+                        style={{ transform: "scale(1.2)" }}
+                      />
+                      <label className="form-check-label fw-semibold" htmlFor="selectAllDesktop">
+                        Select All Items
+                      </label>
+                    </div>
+                    <div className="text-muted small">
+                      {selectedItems.length} of {cartItems.length} selected
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="row g-4">
+        {/* Cart Items - Responsive column */}
+        <div className="col-12 col-lg-8">
+          {cartItems.length > 0 ? (
+            <div className="row g-3">
+              {cartItems.map((item) => (
+                <div key={item.product_id} className="col-12">
+                  <div className="card shadow-sm h-100">
+                    <div className="card-body p-3">
+                      {/* Mobile Layout */}
+                      <div className="d-lg-none">
+                        <div className="d-flex align-items-start mb-3">
+                          <input
+                            type="checkbox"
+                            checked={selectedItems.includes(item.product_id)}
+                            onChange={() => toggleSelectItem(item.product_id)}
+                            className="form-check-input me-3 mt-1"
+                            style={{ transform: "scale(1.1)" }}
+                          />
+                          <div className="flex-grow-1 position-relative">
+                            {/* Amount badge at top right */}
+                            <span className="badge bg-primary text-white position-absolute top-0 end-0" style={{ zIndex: 1 }}>
+                              Amount: {item.qty}
+                            </span>
+                            
+                            <div className="d-flex align-items-center gap-3 mb-2">
+                              <img
+                                src={item.product.image_url || "/contoh.png"}
+                                alt={item.product.nama}
+                                className="rounded"
+                                style={{
+                                  width: "60px",
+                                  height: "60px",
+                                  objectFit: "cover",
+                                  flexShrink: 0
+                                }}
+                              />
+                              <div className="flex-grow-1">
+                                <h6 className="mb-1 fw-bold text-dark">{item.product.nama}</h6>
+                                <p className="text-muted mb-0 small">
+                                  Rp {item.product.harga.toLocaleString()}
+                                </p>
+                              </div>
+                            </div>
+                            
+                            <div className="d-flex align-items-center justify-content-end gap-2">
+                              <div className="fw-bold text-primary">
+                                Rp {(item.product.harga * item.qty).toLocaleString()}
+                              </div>
+                              <button
+                                className="btn btn-sm btn-outline-danger"
+                                onClick={() => removeProduct(item.cartId, item.product_id)}
+                              >
+                                Remove
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Desktop Layout */}
+                      <div className="d-none d-lg-flex align-items-center">
+                        <input
+                          type="checkbox"
+                          checked={selectedItems.includes(item.product_id)}
+                          onChange={() => toggleSelectItem(item.product_id)}
+                          className="form-check-input me-3"
+                        />
+
+                        <div className="d-flex align-items-center gap-3 flex-grow-1">
+                          <div
+                            style={{
+                              width: "80px",
+                              height: "80px",
+                              overflow: "hidden",
+                              borderRadius: "8px",
+                              flexShrink: 0,
+                            }}
+                          >
+                            <img
+                              src={item.product.image_url || "/contoh.png"}
+                              alt={item.product.nama}
+                              style={{
+                                width: "100%",
+                                height: "100%",
+                                objectFit: "cover",
+                              }}
+                            />
+                          </div>
+                          <div>
+                            <h5 className="mb-1">{item.product.nama}</h5>
+                            <p className="text-muted mb-0">
+                              Rp {item.product.harga.toLocaleString()}
+                            </p>
+                          </div>
+                        </div>
+
+                        <div className="d-flex align-items-center gap-3">
+                          <span className="badge bg-light text-dark px-3 py-2">
+                            Amount: {item.qty}
+                          </span>
+
+                          <div className="fw-bold text-primary">
+                            Rp {(item.product.harga * item.qty).toLocaleString()}
+                          </div>
+
+                          <button
+                            className="btn btn-sm btn-danger"
+                            onClick={() => removeProduct(item.cartId, item.product_id)}
+                          >
+                            Remove
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
           ) : (
-            <p className="text-muted">Your cart is empty.</p>
+            <div className="text-center py-5">
+              <div className="mb-3">
+                <i className="bi bi-cart-x" style={{ fontSize: "4rem", color: "#6c757d" }}></i>
+              </div>
+              <h4 className="text-muted">Your cart is empty</h4>
+              <p className="text-muted">Add some products to get started!</p>
+            </div>
           )}
         </div>
 
-        {/* Order summary */}
-        <div className="col-md-4 mt-4 mt-md-0">
-          <div className="card shadow-sm">
-            <div className="card-body">
-              <h5 className="card-title">Order Summary</h5>
-
-              {selectedProducts.length > 0 ? (
-                <>
-                  {selectedProducts.map((item) => (
-                    <div
-                      key={item.product_id}
-                      className="d-flex justify-content-between mb-2"
-                    >
-                      <span>
-                        {item.product.nama} × {item.qty}
-                      </span>
-                      <span>
-                        Rp {(item.product.harga * item.qty).toLocaleString()}
-                      </span>
+        {/* Order Summary - Mobile & Desktop */}
+        <div className="col-12 col-lg-4">
+          {/* Mobile Order Summary - Fixed at bottom */}
+          <div className="d-lg-none">
+            <div className="position-fixed bottom-0 start-0 end-0 bg-white border-top shadow" style={{ zIndex: 1000 }}>
+              <div className="container-fluid p-2">
+                {selectedProducts.length > 0 ? (
+                  <>
+                    <div className="d-flex justify-content-between align-items-center">
+                      <div>
+                        <div className="fw-bold small">Total ({selectedProducts.length} items)</div>
+                        <div className="fs-5 fw-bold text-primary">
+                          Rp {totalPrice.toLocaleString()}
+                        </div>
+                      </div>
+                      <button
+                        className="btn btn-primary px-3"
+                        onClick={handleCheckout}
+                      >
+                        <i className="bi bi-credit-card me-1"></i>
+                        Checkout
+                      </button>
                     </div>
-                  ))}
-                  <hr />
-                  <div className="d-flex justify-content-between fw-bold">
-                    <span>Total</span>
-                    <span>Rp {totalPrice.toLocaleString()}</span>
+                  </>
+                ) : (
+                  <div className="text-center py-1">
+                    <p className="text-muted mb-0 small">Select items to checkout</p>
                   </div>
-                  <button
-                    className="btn btn-primary w-100 mt-3"
-                    onClick={handleCheckout}
-                  >
-                    Proceed to Checkout
-                  </button>
-                </>
-              ) : (
-                <p className="text-muted">Pilih produk untuk checkout.</p>
-              )}
+                )}
+              </div>
+            </div>
+            {/* Spacer to prevent content from being hidden behind fixed summary */}
+            <div style={{ height: "70px" }}></div>
+          </div>
+
+          {/* Desktop Order Summary */}
+          <div className="d-none d-lg-block">
+            <div className="sticky-top" style={{ top: "1rem" }}>
+              <div className="card shadow-sm">
+                <div className="card-body">
+                  <h5 className="card-title d-flex align-items-center">
+                    <i className="bi bi-receipt me-2"></i>
+                    Order Summary
+                  </h5>
+
+                  {selectedProducts.length > 0 ? (
+                    <>
+                      <div className="mb-3">
+                        {selectedProducts.map((item) => (
+                          <div
+                            key={item.product_id}
+                            className="d-flex justify-content-between mb-2 small"
+                          >
+                            <span className="text-truncate me-2">
+                              {item.product.nama} × {item.qty}
+                            </span>
+                            <span className="text-nowrap">
+                              Rp {(item.product.harga * item.qty).toLocaleString()}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                      <hr />
+                      <div className="d-flex justify-content-between fw-bold mb-3">
+                        <span>Total</span>
+                        <span>Rp {totalPrice.toLocaleString()}</span>
+                      </div>
+                      <button
+                        className="btn btn-primary w-100"
+                        onClick={handleCheckout}
+                      >
+                        <i className="bi bi-credit-card me-2"></i>
+                        Proceed to Checkout
+                      </button>
+                    </>
+                  ) : (
+                    <div className="text-center py-3">
+                      <i className="bi bi-cart-check text-muted" style={{ fontSize: "2rem" }}></i>
+                      <p className="text-muted mt-2 mb-0">Select products to checkout</p>
+                    </div>
+                  )}
+                </div>
+              </div>
             </div>
           </div>
         </div>

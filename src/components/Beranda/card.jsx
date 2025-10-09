@@ -67,7 +67,7 @@ export default function ProductCard({ product }) {
       const response = await createTransaksi({ product_id: product.id, qty: quantity });
       const redirectUrl = response.data.redirect_url;
       if (redirectUrl) {
-        window.open(redirectUrl, "_blank");
+        window.location.assign(redirectUrl);
       } else {
         alert("Checkout gagal: redirect_url tidak ditemukan.");
       }

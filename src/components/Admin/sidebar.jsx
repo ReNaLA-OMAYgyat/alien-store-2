@@ -1,6 +1,7 @@
 // src/components/Sidebar.jsx
 import React, { useEffect, useState } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
+import brandLogo from "../../assets/images/Branding/alienStoreLogo_noBrand.svg";
 
 export default function Sidebar() {
   const navigate = useNavigate();
@@ -44,7 +45,7 @@ export default function Sidebar() {
     >
       {/* Logo / Brand */}
       <div className="d-flex align-items-center justify-content-center mb-4">
-        <i className="bi bi-bag-check-fill me-2" style={{ fontSize: 22 }}></i>
+<img src={brandLogo} alt="AlienStore" className="me-2" style={{ height: 80, objectFit: "contain" }} />
         <h4 className="fw-bold m-0">AlienStore</h4>
       </div>
 
