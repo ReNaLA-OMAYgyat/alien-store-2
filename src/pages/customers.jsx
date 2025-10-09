@@ -1,126 +1,124 @@
 import React, { useEffect, useState } from "react";
-import api from "../api";
+import axios from "axios";
 import Sidebar from "../components/Admin/sidebar";
 
 export default function Customers() {
   const [customers, setCustomers] = useState([]);
-  const [roles, setRoles] = useState([]); // roles untuk dropdown
+  const [roles, setRoles] = useState([]);
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(true);
-
-  const getToken = () => localStorage.getItem("token") || sessionStorage.getItem("token");
-
   const [showEdit, setShowEdit] = useState(false);
   const [editCustomer, setEditCustomer] = useState(null);
 
+  const token =
+    localStorage.getItem("token") || sessionStorage.getItem("token");
+
+  // === Fetch Data ===
   useEffect(() => {
-    fetchCustomers();
-    fetchRoles();
+    getCustomers();
+    getRoles();
   }, []);
 
-  const fetchCustomers = () => {
-    const token = getToken();
-    api
-      .get("/user", {
+  const getCustomers = async () => {
+    try {
+      setLoading(true);
+      const res = await axios.get("http://127.0.0.1:8000/api/user", {
         headers: { Authorization: `Bearer ${token}` },
-      })
-      .then((res) => {
-        setCustomers(res.data);
-        setLoading(false);
-      })
-      .catch((err) => {
-        console.error("Error fetch customers:", err);
-        setLoading(false);
       });
+      // pastikan data dari API berbentuk array
+      const dataArray = res.data.data || res.data;
+      setCustomers(Array.isArray(dataArray) ? dataArray : []);
+    } catch (err) {
+      console.error("Gagal ambil data user:", err);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const fetchRoles = () => {
-    const token = getToken();
-    api
-      .get("/role", {
+  const getRoles = async () => {
+    try {
+      const res = await axios.get("http://127.0.0.1:8000/api/role", {
         headers: { Authorization: `Bearer ${token}` },
-      })
-      .then((res) => {
-        setRoles(res.data); // contoh: [{id:1,name:"admin"},{id:2,name:"customer"}]
-      })
-      .catch((err) => {
-        console.error("Error fetch roles:", err);
       });
+      const dataArray = res.data.data || res.data;
+      setRoles(Array.isArray(dataArray) ? dataArray : []);
+    } catch (err) {
+      console.error("Gagal ambil role:", err);
+    }
   };
 
+  // === Filter Search ===
   const filtered = customers.filter((c) =>
     c.name.toLowerCase().includes(search.toLowerCase())
   );
 
+  // === Edit ===
   const handleEdit = (cust) => {
     setEditCustomer({ ...cust, role_id: cust.role?.id || "" });
     setShowEdit(true);
   };
 
-  const handleSave = (e) => {
+  const handleSave = async (e) => {
     e.preventDefault();
-    const token = getToken();
-    api
-      .put(`/user/${editCustomer.id}`, editCustomer, {
-        headers: { Authorization: `Bearer ${token}` },
-      })
-      .then(() => {
-        fetchCustomers();
-        setShowEdit(false);
-      })
-      .catch((err) => {
-        console.error("Error update customer:", err);
-      });
+    try {
+      await axios.put(
+        `http://127.0.0.1:8000/api/user/${editCustomer.id}`,
+        editCustomer,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+      getCustomers();
+      setShowEdit(false);
+    } catch (err) {
+      console.error("Gagal update user:", err);
+    }
   };
 
-  const handleDelete = (id) => {
-    if (!window.confirm("Yakin mau hapus customer ini?")) return;
-    const token = getToken();
-    api
-      .delete(`/user/${id}`, {
+  const handleDelete = async (id) => {
+    if (!window.confirm("Yakin ingin menghapus user ini?")) return;
+    try {
+      await axios.delete(`http://127.0.0.1:8000/api/user/${id}`, {
         headers: { Authorization: `Bearer ${token}` },
-      })
-      .then(() => {
-        fetchCustomers();
-      })
-      .catch((err) => {
-        console.error("Error delete customer:", err);
       });
+      getCustomers();
+    } catch (err) {
+      console.error("Gagal hapus user:", err);
+    }
   };
 
+  // === Render ===
   return (
     <div className="d-flex">
       <Sidebar />
 
-      <div style={{ marginLeft: "250px" }} className="p-4 w-100">
-        <h2 className="mb-4">Customers</h2>
+      <div className="p-4 w-100" style={{ marginLeft: "250px" }}>
+        <h2 className="mb-4">Daftar Customer</h2>
 
-        <div className="row mb-3">
-          <div className="col-md-4">
-            <input
-              type="text"
-              className="form-control"
-              placeholder="Search by name..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-            />
-          </div>
+        <div className="mb-3 col-md-4">
+          <input
+            type="text"
+            className="form-control"
+            placeholder="Cari berdasarkan nama..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
         </div>
 
-        {loading && <p>Loading customers...</p>}
-
-        {!loading && (
+        {loading ? (
+          <p>Memuat data pelanggan...</p>
+        ) : (
           <div className="table-responsive">
             <table className="table table-striped table-bordered align-middle">
               <thead className="table-dark">
                 <tr>
                   <th>ID</th>
-                  <th>Name</th>
+                  <th>Nama</th>
                   <th>Email</th>
                   <th>Role</th>
-                  <th>Created At</th>
-                  <th>Updated At</th>
-                  <th>Action</th>
+                  <th>Tanggal Dibuat</th>
+                  <th>Terakhir Diperbarui</th>
+                  <th>Aksi</th>
                 </tr>
               </thead>
               <tbody>
@@ -152,7 +150,7 @@ export default function Customers() {
                 ) : (
                   <tr>
                     <td colSpan="7" className="text-center">
-                      No customers found.
+                      Tidak ada customer ditemukan.
                     </td>
                   </tr>
                 )}
@@ -181,7 +179,7 @@ export default function Customers() {
                   </div>
                   <div className="modal-body">
                     <div className="mb-3">
-                      <label className="form-label">Name</label>
+                      <label className="form-label">Nama</label>
                       <input
                         type="text"
                         className="form-control"
@@ -220,7 +218,7 @@ export default function Customers() {
                           })
                         }
                       >
-                        <option value="">-- Select Role --</option>
+                        <option value="">-- Pilih Role --</option>
                         {roles.map((r) => (
                           <option key={r.id} value={r.id}>
                             {r.name}
@@ -235,10 +233,10 @@ export default function Customers() {
                       className="btn btn-secondary"
                       onClick={() => setShowEdit(false)}
                     >
-                      Cancel
+                      Batal
                     </button>
                     <button type="submit" className="btn btn-primary">
-                      Save Changes
+                      Simpan Perubahan
                     </button>
                   </div>
                 </form>

@@ -27,16 +27,16 @@ export default function Login() {
       const storage = remember ? localStorage : sessionStorage;
       storage.setItem("token", res.data.token);
       storage.setItem("role", res.data.role);
-
+      storage.setItem("user", JSON.stringify(res.data.user)); 
       // keep the other storage clean if toggled
       const other = remember ? sessionStorage : localStorage;
       other.removeItem("token");
       other.removeItem("role");
-
+      other.removeItem("user"); 
       // Trigger custom event untuk update navbar
       window.dispatchEvent(
         new CustomEvent("userLogin", {
-          detail: { role: res.data.role },
+          detail: { role: res.data.role,user: res.data.user },
         })
       );
 
