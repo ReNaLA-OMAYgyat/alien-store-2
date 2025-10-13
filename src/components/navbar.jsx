@@ -1,6 +1,6 @@
 // src/components/Navbar.jsx
 import React, { useState, useEffect, useRef } from "react";
-import { BsLightning, BsPerson, BsBag, BsSearch } from "react-icons/bs";
+import { BsPerson, BsBag, BsSearch } from "react-icons/bs";
 import { AiOutlineMenu, AiOutlineClose } from "react-icons/ai";
 import { useNavigate, useLocation, Link } from "react-router-dom";
 import api from "../api";
@@ -34,7 +34,7 @@ export default function Navbar() {
   const [selectedSubcategory, setSelectedSubcategory] = useState(null);
   const [subLoading, setSubLoading] = useState(true);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const [showMobileCategoryMenu, setShowMobileCategoryMenu] = useState(false);
+  // showMobileCategoryMenu removed as it's not used
   const [searchQuery, setSearchQuery] = useState("");
   const [showMobileSearch, setShowMobileSearch] = useState(false);
 
@@ -177,7 +177,6 @@ useEffect(() => {
   const selectCategory = (cat) => {
     setSelectedCategory(cat.id);
     setSelectedSubcategory(null);
-    setShowMobileCategoryMenu(false);
     window.dispatchEvent(
       new CustomEvent("categorySelected", { detail: { categoryId: cat.id } })
     );
@@ -195,7 +194,6 @@ useEffect(() => {
 
   const onHomeClick = () => {
     navigate("/beranda");
-    setShowMobileCategoryMenu(false);
     closeSidebar();
   };
 

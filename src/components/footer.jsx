@@ -1,12 +1,11 @@
 // src/components/Footer.jsx
 import React from "react";
-import "bootstrap/dist/css/bootstrap.min.css";
 import {
   Facebook,
   Instagram,
   Twitter,
   Youtube,
-} from "react-bootstrap-icons"; // Bootstrap Icons
+} from "react-bootstrap-icons";
 
 export default function Footer() {
   return (

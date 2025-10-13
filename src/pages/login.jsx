@@ -144,12 +144,11 @@ className="form-control auth-input"
                 </div>
               </div>
 
-              <div className="d-flex justify-content-between align-items-center mb-3">
+              <div className="mb-3">
                 <div className="form-check">
                   <input className="form-check-input" type="checkbox" id="remember" checked={remember} onChange={(e) => setRemember(e.target.checked)} />
                   <label className="form-check-label" htmlFor="remember">Remember me</label>
                 </div>
-<Link className="auth-link" to="#">Forgot password?</Link>
               </div>
 
               <button type="submit" className="btn btn-primary w-100 auth-btn" disabled={loading}>

@@ -151,22 +151,7 @@ export default function CartPage() {
     }
   };
 
-  // 🔹 Clear whole cart manually
-  const clearCart = async (cartId) => {
-    const token = getToken();
-    if (!token) return navigate("/login");
-
-    if (!window.confirm("Clear this entire cart?")) return;
-
-    try {
-      await api.delete(`/carts/${cartId}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      await refreshCarts();
-    } catch (err) {
-      console.error("Error clearing cart:", err.response?.data || err);
-    }
-  };
+  // clearCart function removed as it's not used in the UI
 
   // ✅ Checkout logic (single product only; opens Midtrans and polls backend)
   const handleCheckout = async () => {
@@ -179,14 +164,7 @@ export default function CartPage() {
     }
 
     try {
-      // Compute selected products and totals locally to avoid TDZ issues
-      const selectedProductsLocal = cartItems.filter((i) =>
-        selectedItems.includes(i.product_id)
-      );
-      const totalPriceLocal = selectedProductsLocal.reduce(
-        (sum, i) => sum + (i.product?.harga || 0) * i.qty,
-        0
-      );
+      // Get selected products for checkout
       let payload = {};
 
       if (selectAll) {
@@ -220,55 +198,8 @@ export default function CartPage() {
         return;
       }
 
-      const payWindow = null;
+      // Redirect to payment page in same tab
       window.location.assign(redirect_url);
-
-      // Poll backend using existing paymentSuccess endpoint
-      const pollStatus = async () => {
-        try {
-          const statusRes = await getPaymentStatus(transaksi.order_id);
-          const status = statusRes.data?.status || statusRes.data?.transaksi?.status;
-
-          if (["settlement", "capture"].includes(status)) {
-            // Save a simple record to localStorage for Orders page
-            const saved = JSON.parse(localStorage.getItem("transaksiData") || "[]");
-            const newRecord = {
-              order_id: transaksi.order_id,
-              customer: "You",
-              product: selectedProductsLocal.map((i) => i.product.nama).join(", "),
-              total: totalPriceLocal,
-              status: "Completed",
-              date: new Date().toLocaleString(),
-            };
-            localStorage.setItem("transaksiData", JSON.stringify([newRecord, ...saved]));
-
-            if (payWindow && !payWindow.closed) payWindow.close();
-            alert("Pembayaran berhasil!");
-            await refreshCarts();
-            return true;
-          }
-
-          if (["deny", "cancel", "expire"].includes(status)) {
-            if (payWindow && !payWindow.closed) payWindow.close();
-            alert(`Pembayaran gagal: ${status}`);
-            return true;
-          }
-
-          return false;
-        } catch (e) {
-          // Keep polling on transient errors
-          return false;
-        }
-      };
-
-      // Poll every 3s up to 3 minutes
-      const start = Date.now();
-      const interval = setInterval(async () => {
-        const done = await pollStatus();
-        if (done || Date.now() - start > 180000) {
-          clearInterval(interval);
-        }
-      }, 3000);
     } catch (err) {
       console.error("Error during checkout:", err.response?.data || err);
       alert(err.response?.data?.message || "Checkout gagal");
