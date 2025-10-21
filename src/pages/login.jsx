@@ -73,40 +73,28 @@ export default function Login() {
       <div className="row g-0 min-vh-100 align-items-center">
         {/* Illustration / Mascot */}
         <div className="col-lg-6 d-none d-lg-flex justify-content-center">
-          <div className="p-5 w-100 d-flex justify-content-center align-items-center" style={{ maxWidth: 900 }}>
-            <img src={mascotImg} alt="AlienStore Mascot" className="img-fluid" style={{ objectFit: "contain", maxHeight: "75vh", width: "100%" }} />
+          <div className="p-5 w-100 d-flex justify-content-center align-items-center auth-mascot-wrap" style={{ maxWidth: 900 }}>
+            <img src={mascotImg} alt="AlienStore Mascot" className="img-fluid auth-mascot" style={{ objectFit: "contain", maxHeight: "75vh", width: "100%" }} />
+            {/* Ground shadow so mascot doesn't look like it's floating */}
+            <div className="auth-ground" aria-hidden="true"></div>
           </div>
         </div>
 
         {/* Form Card */}
         <div className="col-12 col-lg-6 d-flex justify-content-center">
-          <div className="card shadow-lg border-0 p-4 my-5" style={{ width: "100%", maxWidth: 430, borderRadius: 16, backgroundColor: "#111827", color: "#e5e7eb" }}>
+<div className="card auth-card shadow-lg border-0 p-4 my-5">
             {/* Logo */}
             <div className="text-center mb-3">
-              <img src={logoImg} alt="AlienStore" style={{ height: 110 }} />
+              <img src={logoImg} alt="AlienStore" style={{ height: 90 }} />
             </div>
 
-            <h3 className="fw-semibold mb-2 text-white">Sign in</h3>
+            <h3 className="fw-semibold mb-1 text-dark">Sign in</h3>
+            <p className="text-muted small mb-3">Welcome back! Please sign in to continue.</p>
             {message && (
               <div className={`alert ${message.type === "error" ? "alert-danger" : "alert-success"} py-2`} role="status">
                 {message.text}
               </div>
             )}
-
-            {/* Social Row */}
-            <div className="d-flex gap-2 mb-3">
-              <button type="button" className="btn btn-outline-light flex-fill" style={{ background: "#1f2937", borderColor: "#374151" }}>
-                <i className="bi bi-facebook me-2"></i> Facebook
-              </button>
-              <button type="button" className="btn btn-outline-light flex-fill" style={{ background: "#1f2937", borderColor: "#374151" }}>
-                <i className="bi bi-twitter-x me-2"></i> Twitter
-              </button>
-              <button type="button" className="btn btn-outline-light flex-fill" style={{ background: "#1f2937", borderColor: "#374151" }}>
-                <i className="bi bi-linkedin me-2"></i> LinkedIn
-              </button>
-            </div>
-
-            <div className="hr-text mb-3"><span>Or</span></div>
 
             <form onSubmit={handleLogin}>
               {/* Email */}
@@ -114,7 +102,7 @@ export default function Login() {
                 <label htmlFor="email" className="form-label">Email address</label>
                 <input
                   type="email"
-                  className="form-control"
+className="form-control auth-input"
                   id="email"
                   placeholder="you@example.com"
                   value={email}
@@ -124,7 +112,6 @@ export default function Login() {
                   inputMode="email"
                   autoFocus
                   disabled={loading}
-                  style={{ background: "#111827", borderColor: "#374151", color: "#e5e7eb" }}
                 />
               </div>
 
@@ -134,7 +121,7 @@ export default function Login() {
                 <div className="input-group">
                   <input
                     type={showPassword ? "text" : "password"}
-                    className="form-control"
+className="form-control auth-input"
                     id="password"
                     placeholder="Enter password"
                     value={password}
@@ -142,7 +129,6 @@ export default function Login() {
                     required
                     autoComplete="current-password"
                     disabled={loading}
-                    style={{ background: "#111827", borderColor: "#374151", color: "#e5e7eb" }}
                   />
                   <button
                     type="button"
@@ -158,22 +144,21 @@ export default function Login() {
                 </div>
               </div>
 
-              <div className="d-flex justify-content-between align-items-center mb-3">
+              <div className="mb-3">
                 <div className="form-check">
                   <input className="form-check-input" type="checkbox" id="remember" checked={remember} onChange={(e) => setRemember(e.target.checked)} />
                   <label className="form-check-label" htmlFor="remember">Remember me</label>
                 </div>
-                <Link className="text-decoration-none" to="#" style={{ color: "#93c5fd" }}>Forgot password?</Link>
               </div>
 
-              <button type="submit" className="btn btn-primary w-100" disabled={loading}>
+              <button type="submit" className="btn btn-primary w-100 auth-btn" disabled={loading}>
                 {loading ? (
                   <>
                     <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
-                    Logging in...
+                    Signing in...
                   </>
                 ) : (
-                  "LOGIN"
+                  "SIGN IN"
                 )}
               </button>
             </form>

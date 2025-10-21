@@ -1,9 +1,10 @@
 // src/components/Navbar.jsx
 import React, { useState, useEffect, useRef } from "react";
-import { BsLightning, BsPerson, BsBag, BsSearch } from "react-icons/bs";
+import { BsPerson, BsBag, BsSearch } from "react-icons/bs";
 import { AiOutlineMenu, AiOutlineClose } from "react-icons/ai";
 import { useNavigate, useLocation, Link } from "react-router-dom";
 import api from "../api";
+import brandLogo from "../assets/images/Branding/alienStoreLogo_noBrand.svg";
 
 // ✅ Pre-placed fallback categories (in case API unavailable)
 const fallbackCategories = [
@@ -18,6 +19,14 @@ export default function Navbar() {
   const navbarRef = useRef(null);
 
   const [userRole, setUserRole] = useState(localStorage.getItem("role") || sessionStorage.getItem("role") || null);
+  const [userName, setUserName] = useState(() => {
+    try {
+      const u = JSON.parse(localStorage.getItem("user")) || JSON.parse(sessionStorage.getItem("user"));
+      return u?.name || null;
+    } catch {
+      return null;
+    }
+  });
   const [cartCount, setCartCount] = useState(0);
   const [categories, setCategories] = useState(fallbackCategories);
   const [subcategories, setSubcategories] = useState([]);
@@ -25,7 +34,7 @@ export default function Navbar() {
   const [selectedSubcategory, setSelectedSubcategory] = useState(null);
   const [subLoading, setSubLoading] = useState(true);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const [showMobileCategoryMenu, setShowMobileCategoryMenu] = useState(false);
+  // showMobileCategoryMenu removed as it's not used
   const [searchQuery, setSearchQuery] = useState("");
   const [showMobileSearch, setShowMobileSearch] = useState(false);
 
@@ -110,10 +119,12 @@ useEffect(() => {
 
     const handleLogin = (e) => {
       setUserRole(e.detail.role);
+      setUserName(e.detail.user?.name || null);
       if (e.detail.role === "User") fetchCartCount();
     };
     const handleLogout = () => {
       setUserRole(null);
+      setUserName(null);
       setCartCount(0);
     };
     const handleCartUpdate = (e) => {
@@ -145,9 +156,12 @@ useEffect(() => {
   const handleLogoutClick = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("role");
+    localStorage.removeItem("user");
     sessionStorage.removeItem("token");
     sessionStorage.removeItem("role");
+    sessionStorage.removeItem("user");
     setUserRole(null);
+    setUserName(null);
     setCartCount(0);
     window.dispatchEvent(new Event("userLogout"));
     navigate("/login");
@@ -163,7 +177,6 @@ useEffect(() => {
   const selectCategory = (cat) => {
     setSelectedCategory(cat.id);
     setSelectedSubcategory(null);
-    setShowMobileCategoryMenu(false);
     window.dispatchEvent(
       new CustomEvent("categorySelected", { detail: { categoryId: cat.id } })
     );
@@ -181,7 +194,6 @@ useEffect(() => {
 
   const onHomeClick = () => {
     navigate("/beranda");
-    setShowMobileCategoryMenu(false);
     closeSidebar();
   };
 
@@ -222,13 +234,8 @@ useEffect(() => {
                 style={{ cursor: "pointer" }}
                 onClick={onHomeClick}
               >
-                <div
-                  className="bg-gradient rounded-circle d-flex align-items-center justify-content-center p-2 me-2"
-                  style={{ background: "linear-gradient(to right, #a78bfa, #f9a8d4)" }}
-                >
-                  <BsLightning className="text-white" />
-                </div>
-                <span className="fw-bold fs-4">Yofte.</span>
+<img src={brandLogo} alt="AlienStore" style={{ height: 80, objectFit: "contain" }} className="me-2" />
+                <span className="fw-bold fs-4">AlienStore</span>
               </div>
 
               {/* Categories beside brand (home only) */}
@@ -326,7 +333,7 @@ useEffect(() => {
               {userRole ? (
                 <div className="d-flex align-items-center gap-2">
                   <BsPerson />
-                  <span className="fw-semibold">{userRole}</span>
+                  <span className="fw-semibold">{userName || "User"}</span>
                   {userRole === "Admin" && (
                     <button
                       className="btn btn-sm btn-warning ms-2"
@@ -572,13 +579,8 @@ useEffect(() => {
             style={{ cursor: "pointer" }}
             onClick={onHomeClick}
           >
-            <div
-              className="rounded-circle d-flex align-items-center justify-content-center p-2 me-2"
-              style={{ background: "linear-gradient(to right, #a78bfa, #f9a8d4)" }}
-            >
-              <BsLightning className="text-white" />
-            </div>
-            <span className="fw-bold">Yofte.</span>
+<img src={brandLogo} alt="AlienStore" style={{ height: 80, objectFit: "contain" }} className="me-2" />
+            <span className="fw-bold">AlienStore</span>
           </div>
           <button className="btn btn-link text-dark p-0" onClick={closeSidebar} aria-label="Close menu">
             <AiOutlineClose size={24} />
@@ -608,7 +610,7 @@ useEffect(() => {
                 <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
                   <BsPerson size={20} />
                   <div>
-                    <div className="fw-semibold">{userRole}</div>
+                    <div className="fw-semibold">{userName || "User"}</div>
                     <small className="text-muted">Logged in</small>
                   </div>
                 </div>

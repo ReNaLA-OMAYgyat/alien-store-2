@@ -1,7 +1,6 @@
 // src/pages/Home.jsx
 import React, { useEffect, useState, useCallback } from "react";
-import "bootstrap/dist/css/bootstrap.min.css";
-import "bootstrap/dist/js/bootstrap.bundle.min.js";
+// Bootstrap CSS/JS loaded via index.html or main.jsx
 import api from "../api";
 import ProductCard from "../components/Beranda/card";
 import HomeCarousel from "../components/Beranda/carousel";
@@ -13,7 +12,7 @@ export default function Home() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  const [selectedCategory, setSelectedCategory] = useState(null);
+  // selectedCategory tracked but only used in event handlers
   const [selectedSubcategory, setSelectedSubcategory] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
 
@@ -29,7 +28,7 @@ export default function Home() {
         : res.data.data || [];
 
       setAllProducts(productsData);
-      setProducts(productsData.slice(0, 4)); // default landing view
+      setProducts(productsData); // tampilkan semua produk saat pertama kali
     } catch (err) {
       console.error("Error fetching products:", err);
       setError("Gagal memuat produk");
@@ -56,11 +55,8 @@ export default function Home() {
       );
     }
 
-    if (!searchQuery && !selectedSubcategory) {
-      setProducts(list.slice(0, 4));
-    } else {
-      setProducts(list);
-    }
+    // Saat tidak ada filter atau pencarian, tampilkan semua produk
+    setProducts(list);
   }, [allProducts, selectedSubcategory, searchQuery]);
 
   useEffect(() => {
@@ -71,11 +67,10 @@ export default function Home() {
     window.dispatchEvent(
       new CustomEvent("cartUpdated", { detail: { increment: 1 } })
     );
-    console.log("Tambah ke keranjang:", product);
   };
 
   const handleCheckout = (product) => {
-    console.log("Checkout produk:", product);
+    // Checkout handled by ProductCard component
   };
 
   useEffect(() => {

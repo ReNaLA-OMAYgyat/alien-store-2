@@ -1,12 +1,11 @@
 // src/components/Footer.jsx
 import React from "react";
-import "bootstrap/dist/css/bootstrap.min.css";
 import {
   Facebook,
   Instagram,
   Twitter,
   Youtube,
-} from "react-bootstrap-icons"; // Bootstrap Icons
+} from "react-bootstrap-icons";
 
 export default function Footer() {
   return (
@@ -45,7 +44,7 @@ export default function Footer() {
           {/* Kontak & Sosmed */}
           <div className="col-md-4 mb-4">
             <h6 className="fw-bold">Kontak Kami</h6>
-            <p className="small mb-1">Email: support@shopx.com</p>
+            <p className="small mb-1">Email: support@alienstore.com</p>
             <p className="small mb-1">Telp: +62 812-3456-7890</p>
             <p className="small">Alamat: Jakarta, Indonesia</p>
             <div className="d-flex gap-3">
@@ -59,7 +58,7 @@ export default function Footer() {
 
         <hr className="border-light" />
         <div className="text-center small">
-          © 2025 ShopX. All rights reserved.
+          © 2025 AlienStore. All rights reserved.
         </div>
       </div>
     </footer>

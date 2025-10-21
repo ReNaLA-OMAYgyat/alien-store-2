@@ -5,6 +5,19 @@
   font-style: normal;
 }
 
+:root {
+  --as-primary: #2563eb;       /* Blue 600 */
+  --as-primary-700: #1d4ed8;   /* Blue 700 */
+  --as-bg: #f8fafc;
+  --as-bg-grad-1: rgba(59,130,246,0.12);
+  --as-bg-grad-2: rgba(147,197,253,0.10);
+  --as-card-bg: #ffffff;
+  --as-text: #0f172a;
+  --as-muted: #6b7280;
+  --as-border: #d1d5db;
+  --as-link: #0d6efd;
+}
+
 body {
   font-family: "Coolvetica", sans-serif;
 }
@@ -101,10 +114,62 @@ body.as-no-scroll {
 
 /* Auth page helpers */
 .auth-bg {
-  background: #1f2937; /* fallback */
-  background: radial-gradient(1200px 600px at 10% -10%, rgba(96,165,250,0.08), transparent 40%),
-              radial-gradient(1000px 500px at 110% 10%, rgba(167,139,250,0.06), transparent 35%),
-              #1f2937;
+  background: var(--as-bg); /* fallback */
+  background: radial-gradient(1200px 600px at 10% -10%, var(--as-bg-grad-1), transparent 40%),
+              radial-gradient(1000px 500px at 110% 10%, var(--as-bg-grad-2), transparent 35%),
+              linear-gradient(180deg, #eaf2ff, #ffffff 40%);
+}
+
+/* Mascot wrapper with ground shadow */
+.auth-mascot-wrap {
+  position: relative;
+  align-items: flex-end !important; /* ensure mascot sits on the ground */
+  padding-bottom: 24px; /* space for the ground ellipse */
+}
+.auth-mascot {
+  z-index: 2;
+  max-height: 72vh;
+  /* Soft fade/blur at the bottom of the mascot */
+  -webkit-mask-image: linear-gradient(to bottom, rgba(0,0,0,1) 0%, rgba(0,0,0,1) 88%, rgba(0,0,0,0) 100%);
+          mask-image: linear-gradient(to bottom, rgba(0,0,0,1) 0%, rgba(0,0,0,1) 88%, rgba(0,0,0,0) 100%);
+}
+
+/* Auth inputs and buttons */
+.auth-input {
+  background: var(--as-card-bg);
+  border-color: var(--as-border);
+  color: var(--as-text);
+}
+.auth-input:focus {
+  border-color: #60a5fa !important;
+  box-shadow: 0 0 0 0.2rem rgba(96, 165, 250, 0.25) !important;
+}
+.auth-btn {
+  padding: 10px 14px;
+  border-radius: 12px;
+  font-weight: 600;
+  background-color: var(--as-primary);
+  border-color: var(--as-primary);
+}
+.auth-btn:hover,
+.auth-btn:focus {
+  background-color: var(--as-primary-700);
+  border-color: var(--as-primary-700);
+}
+.auth-link {
+  color: var(--as-link);
+  text-decoration: none;
+}
+.auth-link:hover {
+  color: var(--as-primary);
+  text-decoration: underline;
+}
+.auth-card {
+  width: 100%;
+  max-width: 430px;
+  border-radius: 16px;
+  background-color: var(--as-card-bg);
+  color: var(--as-text);
 }
 
 .hr-text {

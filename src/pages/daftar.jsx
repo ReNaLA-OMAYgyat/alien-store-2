@@ -73,33 +73,19 @@ export default function Daftar() {
 
         {/* Form Card */}
         <div className="col-12 col-lg-6 d-flex justify-content-center">
-          <div className="card shadow-lg border-0 p-4 my-5" style={{ width: "100%", maxWidth: 430, borderRadius: 16, backgroundColor: "#111827", color: "#e5e7eb" }}>
+<div className="card auth-card shadow-lg border-0 p-4 my-5">
             {/* Logo */}
             <div className="text-center mb-3">
-              <img src={logoImg} alt="AlienStore" style={{ height: 110 }} />
+              <img src={logoImg} alt="AlienStore" style={{ height: 90 }} />
             </div>
 
-            <h3 className="fw-semibold mb-2 text-white">Create account</h3>
+            <h3 className="fw-semibold mb-1 text-dark">Create account</h3>
+            <p className="text-muted small mb-3">Join us to start shopping. It only takes a minute.</p>
             {message && (
               <div className={`alert ${message.type === "error" ? "alert-danger" : "alert-success"} py-2`} role="status">
                 {message.text}
               </div>
             )}
-
-            {/* Social Row */}
-            <div className="d-flex gap-2 mb-3">
-              <button type="button" className="btn btn-outline-light flex-fill" style={{ background: "#1f2937", borderColor: "#374151" }}>
-                <i className="bi bi-facebook me-2"></i> Facebook
-              </button>
-              <button type="button" className="btn btn-outline-light flex-fill" style={{ background: "#1f2937", borderColor: "#374151" }}>
-                <i className="bi bi-twitter-x me-2"></i> Twitter
-              </button>
-              <button type="button" className="btn btn-outline-light flex-fill" style={{ background: "#1f2937", borderColor: "#374151" }}>
-                <i className="bi bi-linkedin me-2"></i> LinkedIn
-              </button>
-            </div>
-
-            <div className="hr-text mb-3"><span>Or</span></div>
 
             <form onSubmit={handleRegister}>
               {/* Name */}
@@ -107,7 +93,7 @@ export default function Daftar() {
                 <label htmlFor="nama" className="form-label">Full name</label>
                 <input
                   type="text"
-                  className={`form-control ${errors.name ? "is-invalid" : ""}`}
+className={`form-control auth-input ${errors.name ? "is-invalid" : ""}`}
                   id="nama"
                   placeholder="Your full name"
                   value={nama}
@@ -115,7 +101,6 @@ export default function Daftar() {
                   required
                   autoComplete="name"
                   disabled={loading}
-                  style={{ background: "#111827", borderColor: "#374151", color: "#e5e7eb" }}
                 />
                 {errors.name && <div className="invalid-feedback d-block">{errors.name[0]}</div>}
               </div>
@@ -125,7 +110,7 @@ export default function Daftar() {
                 <label htmlFor="email" className="form-label">Email address</label>
                 <input
                   type="email"
-                  className={`form-control ${errors.email ? "is-invalid" : ""}`}
+className={`form-control auth-input ${errors.email ? "is-invalid" : ""}`}
                   id="email"
                   placeholder="you@example.com"
                   value={email}
@@ -134,7 +119,6 @@ export default function Daftar() {
                   autoComplete="email"
                   inputMode="email"
                   disabled={loading}
-                  style={{ background: "#111827", borderColor: "#374151", color: "#e5e7eb" }}
                 />
                 {errors.email && <div className="invalid-feedback d-block">{errors.email[0]}</div>}
               </div>
@@ -145,7 +129,7 @@ export default function Daftar() {
                 <div className="input-group">
                   <input
                     type={showPassword ? "text" : "password"}
-                    className={`form-control ${errors.password ? "is-invalid" : ""}`}
+className={`form-control auth-input ${errors.password ? "is-invalid" : ""}`}
                     id="password"
                     placeholder="Create password"
                     value={password}
@@ -153,7 +137,6 @@ export default function Daftar() {
                     required
                     autoComplete="new-password"
                     disabled={loading}
-                    style={{ background: "#111827", borderColor: "#374151", color: "#e5e7eb" }}
                   />
                   <button
                     type="button"
@@ -176,7 +159,7 @@ export default function Daftar() {
                 <div className="input-group">
                   <input
                     type={showConfirm ? "text" : "password"}
-                    className="form-control"
+className="form-control auth-input"
                     id="confirm"
                     placeholder="Re-enter password"
                     value={confirmPassword}
@@ -184,7 +167,6 @@ export default function Daftar() {
                     required
                     autoComplete="new-password"
                     disabled={loading}
-                    style={{ background: "#111827", borderColor: "#374151", color: "#e5e7eb" }}
                   />
                   <button
                     type="button"
@@ -200,7 +182,7 @@ export default function Daftar() {
                 </div>
               </div>
 
-              <button type="submit" className="btn btn-primary w-100" disabled={loading}>
+              <button type="submit" className="btn btn-primary w-100 auth-btn" disabled={loading}>
                 {loading ? (
                   <>
                     <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
